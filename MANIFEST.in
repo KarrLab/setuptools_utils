@@ -1,0 +1,12 @@
+# description
+README.rst
+
+# version
+include setuptools_utils/VERSION
+
+# license
+include LICENSE
+
+# requirements
+include requirements.txt
+include requirements.optional.txt
