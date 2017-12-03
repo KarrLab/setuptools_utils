@@ -1,11 +1,16 @@
+import os
 import setuptools
 import setuptools_utils
 
 # package name
-name = 'setuptools'
+name = 'setuptools_utils'
+dirname = os.path.dirname(__file__)
+
+# convert README.md to README.rst
+setuptools_utils.convert_readme_md_to_rst(dirname)
 
 # get package metadata
-md = setuptools_utils.get_package_metadata(name)
+md = setuptools_utils.get_package_metadata(dirname, name)
 
 # install package
 setuptools.setup(
@@ -19,7 +24,7 @@ setuptools.setup(
     author="Karr Lab",
     author_email="karr@mssm.com",
     license="MIT",
-    keywords='',
+    keywords='setuptools, pip, requirements, GitHub, pandoc',
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     package_data={
         name: [

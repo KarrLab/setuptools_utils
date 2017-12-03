@@ -1,2 +1,2 @@
 configparser
-git+https://github.com/davidfischer/requirements-parser.git
+git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser

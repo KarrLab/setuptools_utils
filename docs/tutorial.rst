@@ -8,14 +8,16 @@ The following example shows how to link a package number stored in ``package/VER
 
 .. code-block:: python
 
+    import os
     import setuptools
     import setuptools_utils
 
     # package name
     name = 'my_package'
+    dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(name)
+    md = setuptools_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -31,14 +33,19 @@ The following example shows how to link GutHub Markdown-formatted README.md file
 
 .. code-block:: python
 
+    import os
     import setuptools
     import setuptools_utils
 
     # package name
     name = 'my_package'
+    dirname = os.path.dirname(__file__)
+
+    # convert README.md to README.rst
+    setuptools_utils.convert_readme_md_to_rst(dirname)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(name)
+    md = setuptools_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -54,14 +61,16 @@ The following example illustrates how to link setuptools with requirements.txt f
 
 .. code-block:: python
 
+    import os
     import setuptools
     import setuptools_utils
 
     # package name
     name = 'my_package'
+    dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(name)
+    md = setuptools_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -103,20 +112,22 @@ The following example illustrates how to restore overridden console scripts duri
 
 .. code-block:: python
 
+    import os
     import setuptools
     import setuptools_utils
 
     # package name
     name = 'my_package'
+    dirname = os.path.dirname(__file__)
 
     # read old console scripts
-    console_scripts = setuptools_utils.get_console_scripts(name)
+    console_scripts = setuptools_utils.get_console_scripts(dirname, name)
 
     # install package
     setuptools.setup(...)
 
     # restore old console scripts
-    setuptools_utils.add_console_scripts(name, console_scripts)
+    setuptools_utils.add_console_scripts(dirname, name, console_scripts)
 
 
 Putting it all together
@@ -126,17 +137,19 @@ The following example shows how to use all of the features of this package:
 
 .. code-block:: python
 
+    import os
     import setuptools
     import setuptools_utils
 
     # package name
     name = 'my_package'
+    dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(name)
+    md = setuptools_utils.get_package_metadata(dirname, name)
 
     # read old console scripts
-    console_scripts = setuptools_utils.get_console_scripts(name)
+    console_scripts = setuptools_utils.get_console_scripts(dirname, name)
 
     # install package
     setuptools.setup(
@@ -150,4 +163,4 @@ The following example shows how to use all of the features of this package:
     )
 
     # restore old console scripts
-    setuptools_utils.add_console_scripts(name, console_scripts)
+    setuptools_utils.add_console_scripts(dirname, name, console_scripts)
