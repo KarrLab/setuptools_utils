@@ -10,14 +10,19 @@ The following example shows how to link a package number stored in ``package/VER
 
     import os
     import setuptools
-    import setuptools_utils
+    try:
+        import pkg_utils
+    except ImportError:
+        import pip
+        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import pkg_utils
 
     # package name
     name = 'my_package'
     dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(dirname, name)
+    md = pkg_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -35,17 +40,22 @@ The following example shows how to link GutHub Markdown-formatted README.md file
 
     import os
     import setuptools
-    import setuptools_utils
+    try:
+        import pkg_utils
+    except ImportError:
+        import pip
+        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import pkg_utils
 
     # package name
     name = 'my_package'
     dirname = os.path.dirname(__file__)
 
     # convert README.md to README.rst
-    setuptools_utils.convert_readme_md_to_rst(dirname)
+    pkg_utils.convert_readme_md_to_rst(dirname)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(dirname, name)
+    md = pkg_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -63,14 +73,19 @@ The following example illustrates how to link setuptools with requirements.txt f
 
     import os
     import setuptools
-    import setuptools_utils
+    try:
+        import pkg_utils
+    except ImportError:
+        import pip
+        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import pkg_utils
 
     # package name
     name = 'my_package'
     dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(dirname, name)
+    md = pkg_utils.get_package_metadata(dirname, name)
 
     # install package
     setuptools.setup(
@@ -103,7 +118,7 @@ The ``requirements.optional.txt`` should follow the same format, but with sectio
     package_3
     package_4
 
-In addition to the installation options described in ``requirements.optional.txt``, setuptools_utils will create ``tests``, ``docs`` and ``all`` options to install the test, documentation, and all dependencies.
+In addition to the installation options described in ``requirements.optional.txt``, pkg_utils will create ``tests``, ``docs`` and ``all`` options to install the test, documentation, and all dependencies.
 
 Restoring overridden console scripts during editable installations
 ------------------------------------------------------------------
@@ -114,20 +129,25 @@ The following example illustrates how to restore overridden console scripts duri
 
     import os
     import setuptools
-    import setuptools_utils
+    try:
+        import pkg_utils
+    except ImportError:
+        import pip
+        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import pkg_utils
 
     # package name
     name = 'my_package'
     dirname = os.path.dirname(__file__)
 
     # read old console scripts
-    console_scripts = setuptools_utils.get_console_scripts(dirname, name)
+    console_scripts = pkg_utils.get_console_scripts(dirname, name)
 
     # install package
     setuptools.setup(...)
 
     # restore old console scripts
-    setuptools_utils.add_console_scripts(dirname, name, console_scripts)
+    pkg_utils.add_console_scripts(dirname, name, console_scripts)
 
 
 Putting it all together
@@ -139,17 +159,22 @@ The following example shows how to use all of the features of this package:
 
     import os
     import setuptools
-    import setuptools_utils
+    try:
+        import pkg_utils
+    except ImportError:
+        import pip
+        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import pkg_utils
 
     # package name
     name = 'my_package'
     dirname = os.path.dirname(__file__)
 
     # get package metadata
-    md = setuptools_utils.get_package_metadata(dirname, name)
+    md = pkg_utils.get_package_metadata(dirname, name)
 
     # read old console scripts
-    console_scripts = setuptools_utils.get_console_scripts(dirname, name)
+    console_scripts = pkg_utils.get_console_scripts(dirname, name)
 
     # install package
     setuptools.setup(
@@ -163,4 +188,4 @@ The following example shows how to use all of the features of this package:
     )
 
     # restore old console scripts
-    setuptools_utils.add_console_scripts(dirname, name, console_scripts)
+    pkg_utils.add_console_scripts(dirname, name, console_scripts)

@@ -1,16 +1,16 @@
 import os
 import setuptools
-import setuptools_utils
+import pkg_utils
 
 # package name
-name = 'setuptools_utils'
+name = 'pkg_utils'
 dirname = os.path.dirname(__file__)
 
 # convert README.md to README.rst
-setuptools_utils.convert_readme_md_to_rst(dirname)
+pkg_utils.convert_readme_md_to_rst(dirname)
 
 # get package metadata
-md = setuptools_utils.get_package_metadata(dirname, name)
+md = pkg_utils.get_package_metadata(dirname, name)
 
 # install package
 setuptools.setup(

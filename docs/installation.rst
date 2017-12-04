@@ -28,17 +28,17 @@ Use the following command to install this package from PyPI:
 
     .. code-block:: bash
 
-        pip install setuptools_utils
+        pip install pkg_utils
 
 The latest version of this package can be installed from GitHub using this command:
 
     .. code-block:: bash
 
-        pip install git+https://github.com/KarrLab/setuptools_utils.git#egg=setuptools_utils
+        pip install git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils
 
 Support for the pandoc can be installed using the following option:
 
     .. code-block:: bash
 
-        pip install setuptools_utils[pandoc]
-        pip install git+https://github.com/KarrLab/setuptools_utils.git#egg=setuptools_utils[pandoc]
+        pip install pkg_utils[pandoc]
+        pip install git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils[pandoc]

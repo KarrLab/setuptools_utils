@@ -1,4 +1,4 @@
-""" Tests for setuptools_utils
+""" Tests for pkg_utils
 
 :Author: Jonathan Karr <jonrkarr@gmail.com>
 :Date: 2017-11-14
@@ -7,7 +7,7 @@
 """
 
 import os
-import setuptools_utils
+import pkg_utils
 import shutil
 import tempfile
 import unittest
@@ -68,8 +68,8 @@ class TestCase(unittest.TestCase):
         shutil.rmtree(self.dirname)
 
     def test_get_package_metadata(self):
-        setuptools_utils.convert_readme_md_to_rst(self.dirname)
-        md = setuptools_utils.get_package_metadata(self.dirname, 'package')
+        pkg_utils.convert_readme_md_to_rst(self.dirname)
+        md = pkg_utils.get_package_metadata(self.dirname, 'package')
         self.assertEqual(md.long_description, 'Test\n====\n')
         self.assertEqual(md.version, '0.0.1')
 
@@ -139,7 +139,7 @@ class TestCase(unittest.TestCase):
             file.write('req1\n')
 
         with self.assertRaisesRegexp(Exception, '^Test dependencies should be defined in `tests/requirements`$'):
-            setuptools_utils.get_package_metadata(self.dirname, 'package')
+            pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_get_package_metadata_docs_require_error(self):
         with open(os.path.join(self.dirname, 'requirements.optional.txt'), 'w') as file:
@@ -147,29 +147,29 @@ class TestCase(unittest.TestCase):
             file.write('req1\n')
 
         with self.assertRaisesRegexp(Exception, '^Documentation dependencies should be defined in `docs/requirements`$'):
-            setuptools_utils.get_package_metadata(self.dirname, 'package')
+            pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_PackageMetadata(self):
-        setuptools_utils.core.PackageMetadata()
+        pkg_utils.core.PackageMetadata()
 
     def test_convert_readme_md_to_rst(self):
-        setuptools_utils.convert_readme_md_to_rst(self.dirname)
+        pkg_utils.convert_readme_md_to_rst(self.dirname)
 
         with open(os.path.join(self.dirname, 'README.rst'), 'r') as file:
             self.assertEqual(file.read(), 'Test\n====\n')
 
     def test_get_long_description(self):
-        setuptools_utils.convert_readme_md_to_rst(self.dirname)
-        self.assertEqual(setuptools_utils.get_long_description(self.dirname), 'Test\n====\n')
+        pkg_utils.convert_readme_md_to_rst(self.dirname)
+        self.assertEqual(pkg_utils.get_long_description(self.dirname), 'Test\n====\n')
 
     def test_get_long_description_no_rst(self):
-        self.assertEqual(setuptools_utils.get_long_description(self.dirname), '')
+        self.assertEqual(pkg_utils.get_long_description(self.dirname), '')
 
     def test_get_version(self):
-        self.assertEqual(setuptools_utils.get_version(self.dirname, 'package'), '0.0.1')
+        self.assertEqual(pkg_utils.get_version(self.dirname, 'package'), '0.0.1')
 
     def test_parse_requirements_file(self):
-        reqs, links = setuptools_utils.parse_requirements_file(os.path.join(self.dirname, 'requirements.txt'))
+        reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'requirements.txt'))
         self.assertEqual(reqs, [
             'req1',
             'req1',
@@ -179,11 +179,11 @@ class TestCase(unittest.TestCase):
         ])
         self.assertEqual(links, [])
 
-        reqs, links = setuptools_utils.parse_requirements_file(os.path.join(self.dirname, 'tests', 'requirements.txt'))
+        reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'tests', 'requirements.txt'))
         self.assertEqual(reqs, ['req9'])
         self.assertEqual(links, [])
 
-        reqs, links = setuptools_utils.parse_requirements_file(os.path.join(self.dirname, 'docs', 'requirements.txt'))
+        reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'docs', 'requirements.txt'))
         self.assertEqual(reqs, [
             'req1',
             'req1',
@@ -207,12 +207,12 @@ class TestCase(unittest.TestCase):
             'git+https://github.com/opt/req18.git@branch',
         ])
 
-        reqs, links = setuptools_utils.parse_requirements_file(os.path.join(self.dirname, 'NONE'))
+        reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'NONE'))
         self.assertEqual(reqs, [])
         self.assertEqual(links, [])
 
     def test_parse_optional_requirements_file(self):
-        reqs, links = setuptools_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'requirements.optional.txt'))
+        reqs, links = pkg_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'requirements.optional.txt'))
         self.assertEqual(reqs, {
             'package_opt_1': [
                 'req7',
@@ -227,7 +227,7 @@ class TestCase(unittest.TestCase):
             'git+https://github.com/opt/req10.git@branch',
         ])
 
-        reqs, links = setuptools_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'NONE'))
+        reqs, links = pkg_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'NONE'))
         self.assertEqual(reqs, {})
         self.assertEqual(links, [])
 
@@ -237,34 +237,34 @@ class TestCase(unittest.TestCase):
         with open(filename, 'w') as file:
             file.write('[package_opt_1] #\n')
         with self.assertRaisesRegexp(Exception, '^Could not parse optional dependency: '):
-            setuptools_utils.parse_optional_requirements_file(filename)
+            pkg_utils.parse_optional_requirements_file(filename)
 
         with open(filename, 'w') as file:
             file.write('req1\n')
             file.write('[option1]\n')
             file.write('[req2]\n')
         with self.assertRaisesRegexp(Exception, '^Required dependencies should be not be '):
-            setuptools_utils.parse_optional_requirements_file(filename)
+            pkg_utils.parse_optional_requirements_file(filename)
 
     def test_parse_requirement_lines_error(self):
         with self.assertRaisesRegexp(Exception, '^Dependency could not be parsed: '):
-            setuptools_utils.parse_requirement_lines(['req2 #git+https://github.com/opt/req1.git#egg=req1'])
+            pkg_utils.parse_requirement_lines(['req2 #git+https://github.com/opt/req1.git#egg=req1'])
 
     def test_install_dependencies(self):
-        setuptools_utils.install_dependencies(['setuptools'])
+        pkg_utils.install_dependencies(['setuptools'])
 
     def test_get_console_scripts(self):
         os.mkdir(os.path.join(self.dirname, 'package.egg-info'))
         with open(os.path.join(self.dirname, 'package.egg-info', 'entry_points.txt'), 'w') as file:
             file.write('[console_scripts]\nentry1=package.__main__1:main\n')
 
-        scripts = setuptools_utils.get_console_scripts(self.dirname, 'package')
+        scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
         self.assertEqual(scripts, {
             'entry1': 'package.__main__1:main',
         })
 
     def test_get_console_scripts_no_egg(self):
-        scripts = setuptools_utils.get_console_scripts(self.dirname, 'package')
+        scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
         self.assertEqual(scripts, None)
 
     def test_add_console_scripts(self):
@@ -272,8 +272,8 @@ class TestCase(unittest.TestCase):
         with open(os.path.join(self.dirname, 'package.egg-info', 'entry_points.txt'), 'w') as file:
             file.write('[console_scripts]\nentry1=package.__main__1:main\n')
 
-        setuptools_utils.add_console_scripts(self.dirname, 'package', {'entry2': 'package.__main__2:main'})
-        scripts = setuptools_utils.get_console_scripts(self.dirname, 'package')
+        pkg_utils.add_console_scripts(self.dirname, 'package', {'entry2': 'package.__main__2:main'})
+        scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
         self.assertEqual(scripts, {
             'entry1': 'package.__main__1:main',
             'entry2': 'package.__main__2:main',
