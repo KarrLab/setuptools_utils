@@ -85,9 +85,9 @@ def get_package_metadata(dirname, package_name):
     if 'docs' in extras_require and extras_require['docs']:
         raise Exception('Documentation dependencies should be defined in `docs/requirements`')
 
-    extras_require['tests'] = tests_require        
+    extras_require['tests'] = tests_require
     extras_require['docs'] = docs_require
-    
+
     all_reqs = []
     for reqs in extras_require.values():
         all_reqs += reqs
@@ -195,7 +195,7 @@ def parse_optional_requirements_file(filename):
     option = None
     extras_require = {}
     dependency_links = []
-    
+
     if os.path.isfile(filename):
         with open(filename, 'r') as file:
             for line in file:
@@ -296,13 +296,18 @@ def get_console_scripts(dirname, package_name):
         package_name (:obj:`str`): package name
 
     Returns:
-        :obj:`dict`: console script names and locations
+        :obj:`dict` of :obj:`dict`: console script names and functions
     """
     egg_dir = os.path.join(dirname, package_name + '.egg-info')
     if os.path.isdir(egg_dir):
         parser = configparser.ConfigParser()
         parser.read(os.path.join(egg_dir, 'entry_points.txt'))
-        return {str(script): str(func) for script, func in parser.items('console_scripts')}
+        scripts = {}
+        for name, func in parser.items('console_scripts'):
+            scripts[str(name)] = {
+                'function': str(func),
+            }
+        return scripts
     return None
 
 
@@ -312,18 +317,22 @@ def add_console_scripts(dirname, package_name, console_scripts):
     Args:
         dirname (:obj:`str`): path to the package
         package_name (:obj:`str`): package name
-        console_scripts (:obj:`dict`): console script names and locations        
+        console_scripts (:obj:`dict` of :obj:`dict`): console script names and functions
     """
-    if console_scripts is not None:
-        egg_dir = os.path.join(dirname, package_name + '.egg-info')
-        parser = configparser.ConfigParser()
+    if not console_scripts:
+        return
 
-        parser.read(os.path.join(egg_dir, 'entry_points.txt'))
-        for console_script, func in parser.items('console_scripts'):
-            console_scripts[console_script] = func
+    egg_dir = os.path.join(dirname, package_name + '.egg-info')
+    parser = configparser.ConfigParser()
 
-        for console_script, func in console_scripts.items():
-            parser.set('console_scripts', console_script, func)
+    parser.read(os.path.join(egg_dir, 'entry_points.txt'))
+    for name, func in parser.items('console_scripts'):
+        console_scripts[str(name)] = {
+            'function': str(func),
+        }
 
-        with open(os.path.join(egg_dir, 'entry_points.txt'), 'w') as file:
-            parser.write(file)
+    for name, metadata in console_scripts.items():
+        parser.set('console_scripts', name, metadata['function'])
+
+    with open(os.path.join(egg_dir, 'entry_points.txt'), 'w') as file:
+        parser.write(file)

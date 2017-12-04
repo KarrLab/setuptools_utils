@@ -256,25 +256,63 @@ class TestCase(unittest.TestCase):
     def test_get_console_scripts(self):
         os.mkdir(os.path.join(self.dirname, 'package.egg-info'))
         with open(os.path.join(self.dirname, 'package.egg-info', 'entry_points.txt'), 'w') as file:
-            file.write('[console_scripts]\nentry1=package.__main__1:main\n')
+            file.write('[console_scripts]\n')
+            file.write('entry1=package.__main__1:main\n')
+            file.write('pip=package.__main__2:main\n')
 
         scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
-        self.assertEqual(scripts, {
-            'entry1': 'package.__main__1:main',
+        self.assertEqual(sorted(list(scripts.keys())), ['entry1', 'pip'])
+        self.assertEqual(scripts['entry1'], {
+            'function': 'package.__main__1:main',
         })
+        self.assertEqual(scripts['pip']['function'], 'package.__main__2:main')
 
     def test_get_console_scripts_no_egg(self):
         scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
         self.assertEqual(scripts, None)
 
     def test_add_console_scripts(self):
-        os.mkdir(os.path.join(self.dirname, 'package.egg-info'))
-        with open(os.path.join(self.dirname, 'package.egg-info', 'entry_points.txt'), 'w') as file:
-            file.write('[console_scripts]\nentry1=package.__main__1:main\n')
+        egg_dir = os.path.join(self.dirname, 'package.egg-info')
+        entry_points_filename = os.path.join(egg_dir, 'entry_points.txt')
+        os.mkdir(egg_dir)
+        with open(entry_points_filename, 'w') as file:
+            file.write('[console_scripts]\n')
+            file.write('entry1=package.__main__1:main\n')
 
-        pkg_utils.add_console_scripts(self.dirname, 'package', {'entry2': 'package.__main__2:main'})
+        pkg_utils.add_console_scripts(self.dirname, 'package', {
+            'entry2': {
+                'function': 'package.__main__2:main',
+            },
+            'entry3': {
+                'function': 'package.__main__3:main',
+            }
+        })
+
         scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
         self.assertEqual(scripts, {
-            'entry1': 'package.__main__1:main',
-            'entry2': 'package.__main__2:main',
+            'entry1': {
+                'function': 'package.__main__1:main',
+            },
+            'entry2': {
+                'function': 'package.__main__2:main',
+            },
+            'entry3': {
+                'function': 'package.__main__3:main',
+             },
+        })
+
+        # add no additional console scripts
+        pkg_utils.add_console_scripts(self.dirname, 'package', {})
+
+        scripts = pkg_utils.get_console_scripts(self.dirname, 'package')
+        self.assertEqual(scripts, {
+            'entry1': {
+                'function': 'package.__main__1:main',
+            },
+            'entry2': {
+                'function': 'package.__main__2:main',
+            },
+            'entry3': {
+                'function': 'package.__main__3:main',
+            },
         })
