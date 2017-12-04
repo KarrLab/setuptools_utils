@@ -1,3 +1,16 @@
+# install requirements
+try:
+    import configparser
+except:
+    import pip
+    pip.main(['install', 'configparser'])
+try:
+    import requirements
+except:
+    import pip
+    pip.main(['install', 'git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser'])
+
+# import
 import os
 import setuptools
 import pkg_utils
