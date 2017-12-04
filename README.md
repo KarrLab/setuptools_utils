@@ -8,7 +8,7 @@
 
 # pkg_utils
 
-Utilities for linking setuptools with package version metadata, GitHub README.md files, requirements.txt files, and restoring overridden entry points during for editable installations.
+Utilities for linking setuptools with package version metadata, GitHub README.md files, requirements.txt files, and restoring overridden entry points during for editable installations. Includes support for optional dependencies.
 
 ## Installation
 
