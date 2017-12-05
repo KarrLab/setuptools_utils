@@ -112,11 +112,12 @@ def get_version(dirname, package_name):
         return file.read().strip()
 
 
-def get_dependencies(dirname, include_specs=True, include_markers=True):
+def get_dependencies(dirname, include_extras=True, include_specs=True, include_markers=True):
     """ Parse required and optional dependencies from requirements.txt files
 
     Args:
         dirname (:obj:`str`): path to the package
+        include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
@@ -128,22 +129,22 @@ def get_dependencies(dirname, include_specs=True, include_markers=True):
 
     install_requires, tmp = parse_requirements_file(
         os.path.join(dirname, 'requirements.txt'),
-        include_specs=include_specs, include_markers=include_markers)
+        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     extras_require, tmp = parse_optional_requirements_file(
         os.path.join(dirname, 'requirements.optional.txt'),
-        include_specs=include_specs, include_markers=include_markers)
+        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     tests_require, tmp = parse_requirements_file(
         os.path.join(dirname, 'tests/requirements.txt'),
-        include_specs=include_specs, include_markers=include_markers)
+        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     docs_require, tmp = parse_requirements_file(
         os.path.join(dirname, 'docs/requirements.txt'),
-        include_specs=include_specs, include_markers=include_markers)
+        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     if 'tests' in extras_require and extras_require['tests']:
@@ -181,11 +182,12 @@ def get_dependencies(dirname, include_specs=True, include_markers=True):
     return (install_requires, extras_require, tests_require, dependency_links)
 
 
-def parse_requirements_file(filename, include_specs=True, include_markers=True):
+def parse_requirements_file(filename, include_extras=True, include_specs=True, include_markers=True):
     """ Parse a requirements.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
@@ -198,14 +200,15 @@ def parse_requirements_file(filename, include_specs=True, include_markers=True):
             lines = file.readlines()
     else:
         lines = []
-    return parse_requirement_lines(lines, include_specs=include_specs, include_markers=include_markers)
+    return parse_requirement_lines(lines, include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
 
 
-def parse_optional_requirements_file(filename, include_specs=True, include_markers=True):
+def parse_optional_requirements_file(filename, include_extras=True, include_specs=True, include_markers=True):
     """ Parse a requirements.optional.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
@@ -234,7 +237,7 @@ def parse_optional_requirements_file(filename, include_specs=True, include_marke
                 else:
                     if option is None:
                         raise Exception("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
-                    tmp1, tmp2 = parse_requirement_lines([line], include_specs=include_specs, include_markers=include_markers)
+                    tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
                         extras_require[option] = []
                     extras_require[option] += tmp1
@@ -243,11 +246,12 @@ def parse_optional_requirements_file(filename, include_specs=True, include_marke
     return (extras_require, dependency_links)
 
 
-def parse_requirement_lines(lines, include_specs=True, include_markers=True):
+def parse_requirement_lines(lines, include_extras=True, include_specs=True, include_markers=True):
     """ Parse lines from a requirements.txt file into list of requirements and dependency links
 
     Args:
         lines (:obj:`list` of :obj:`str`): lines from a requirements.txt file
+        include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
@@ -284,14 +288,13 @@ def parse_requirement_lines(lines, include_specs=True, include_markers=True):
             marker = ''
 
         req_setup = req.name
-        if include_specs:
-            req_setup += (
-                ('[' + ', '.join(sorted(req.extras)) + ']' if req.extras else '')
-                + ' '
-                + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
-            ).rstrip()
-        if include_markers:
-            req_setup += ('; ' + marker if marker else '')
+        if include_extras and req.extras:
+            req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
+        if include_specs and req.specs:
+            req_setup += ' ' + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
+        req_setup = req_setup.rstrip()
+        if include_markers and marker:
+            req_setup += '; ' + marker
 
         requires.append(req_setup.strip())
 
