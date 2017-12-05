@@ -66,56 +66,7 @@ def get_package_metadata(dirname, package_name):
     md.version = get_version(dirname, package_name)
 
     # get dependencies
-    dependency_links = []
-
-    install_requires, tmp = parse_requirements_file(os.path.join(dirname, 'requirements.txt'))
-    dependency_links += tmp
-
-    extras_require, tmp = parse_optional_requirements_file(os.path.join(dirname, 'requirements.optional.txt'))
-    dependency_links += tmp
-
-    tests_require, tmp = parse_requirements_file(os.path.join(dirname, 'tests/requirements.txt'))
-    dependency_links += tmp
-
-    docs_require, tmp = parse_requirements_file(os.path.join(dirname, 'docs/requirements.txt'))
-    dependency_links += tmp
-
-    if 'tests' in extras_require and extras_require['tests']:
-        raise Exception('Test dependencies should be defined in `tests/requirements`')
-    if 'docs' in extras_require and extras_require['docs']:
-        raise Exception('Documentation dependencies should be defined in `docs/requirements`')
-
-    extras_require['tests'] = tests_require
-    extras_require['docs'] = docs_require
-
-    all_reqs = []
-    for reqs in extras_require.values():
-        all_reqs += reqs
-    extras_require['all'] = all_reqs
-
-    install_requires = set(install_requires)
-    for option in extras_require:
-        extras_require[option] = set(extras_require[option])
-    tests_require = set(tests_require)
-    docs_require = set(docs_require)
-    dependency_links = set(dependency_links)
-
-    for option in extras_require:
-        extras_require[option] = extras_require[option].difference(install_requires)
-    tests_require = tests_require.difference(install_requires)
-    docs_require = docs_require.difference(install_requires)
-
-    install_requires = sorted(list(install_requires))
-    for option in extras_require:
-        extras_require[option] = sorted(list(extras_require[option]))
-    tests_require = sorted(list(tests_require))
-    docs_require = sorted(list(docs_require))
-    dependency_links = sorted(list(dependency_links))
-
-    md.install_requires = install_requires
-    md.extras_require = extras_require
-    md.tests_require = tests_require
-    md.dependency_links = dependency_links
+    md.install_requires, md.extras_require, md.tests_require, md.dependency_links = get_dependencies(dirname)
 
     return md
 
@@ -161,11 +112,82 @@ def get_version(dirname, package_name):
         return file.read().strip()
 
 
-def parse_requirements_file(filename):
+def get_dependencies(dirname, include_specs=True, include_markers=True):
+    """ Parse required and optional dependencies from requirements.txt files
+
+    Args:
+        dirname (:obj:`str`): path to the package
+        include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
+        include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
+
+    Returns:
+        :obj:`list` of :obj:`str`: requirements
+        :obj:`list` of :obj:`str`: dependency links
+    """
+    dependency_links = []
+
+    install_requires, tmp = parse_requirements_file(
+        os.path.join(dirname, 'requirements.txt'),
+        include_specs=include_specs, include_markers=include_markers)
+    dependency_links += tmp
+
+    extras_require, tmp = parse_optional_requirements_file(
+        os.path.join(dirname, 'requirements.optional.txt'),
+        include_specs=include_specs, include_markers=include_markers)
+    dependency_links += tmp
+
+    tests_require, tmp = parse_requirements_file(
+        os.path.join(dirname, 'tests/requirements.txt'),
+        include_specs=include_specs, include_markers=include_markers)
+    dependency_links += tmp
+
+    docs_require, tmp = parse_requirements_file(
+        os.path.join(dirname, 'docs/requirements.txt'),
+        include_specs=include_specs, include_markers=include_markers)
+    dependency_links += tmp
+
+    if 'tests' in extras_require and extras_require['tests']:
+        raise Exception('Test dependencies should be defined in `tests/requirements`')
+    if 'docs' in extras_require and extras_require['docs']:
+        raise Exception('Documentation dependencies should be defined in `docs/requirements`')
+
+    extras_require['tests'] = tests_require
+    extras_require['docs'] = docs_require
+
+    all_reqs = []
+    for reqs in extras_require.values():
+        all_reqs += reqs
+    extras_require['all'] = all_reqs
+
+    install_requires = set(install_requires)
+    for option in extras_require:
+        extras_require[option] = set(extras_require[option])
+    tests_require = set(tests_require)
+    docs_require = set(docs_require)
+    dependency_links = set(dependency_links)
+
+    for option in extras_require:
+        extras_require[option] = extras_require[option].difference(install_requires)
+    tests_require = tests_require.difference(install_requires)
+    docs_require = docs_require.difference(install_requires)
+
+    install_requires = sorted(list(install_requires))
+    for option in extras_require:
+        extras_require[option] = sorted(list(extras_require[option]))
+    tests_require = sorted(list(tests_require))
+    docs_require = sorted(list(docs_require))
+    dependency_links = sorted(list(dependency_links))
+
+    return (install_requires, extras_require, tests_require, dependency_links)
+
+
+def parse_requirements_file(filename, include_specs=True, include_markers=True):
     """ Parse a requirements.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
+        include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
     Returns:
         :obj:`list` of :obj:`str`: requirements
@@ -176,14 +198,16 @@ def parse_requirements_file(filename):
             lines = file.readlines()
     else:
         lines = []
-    return parse_requirement_lines(lines)
+    return parse_requirement_lines(lines, include_specs=include_specs, include_markers=include_markers)
 
 
-def parse_optional_requirements_file(filename):
+def parse_optional_requirements_file(filename, include_specs=True, include_markers=True):
     """ Parse a requirements.optional.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
+        include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
     Returns:
         :obj:`dict` of :obj:`list` of :obj:`str`: requirements
@@ -210,7 +234,7 @@ def parse_optional_requirements_file(filename):
                 else:
                     if option is None:
                         raise Exception("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
-                    tmp1, tmp2 = parse_requirement_lines([line])
+                    tmp1, tmp2 = parse_requirement_lines([line], include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
                         extras_require[option] = []
                     extras_require[option] += tmp1
@@ -219,11 +243,13 @@ def parse_optional_requirements_file(filename):
     return (extras_require, dependency_links)
 
 
-def parse_requirement_lines(lines):
+def parse_requirement_lines(lines, include_specs=True, include_markers=True):
     """ Parse lines from a requirements.txt file into list of requirements and dependency links
 
     Args:
         lines (:obj:`list` of :obj:`str`): lines from a requirements.txt file
+        include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
+        include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
 
     Returns:
         :obj:`list` of :obj:`str`: requirements
@@ -257,13 +283,15 @@ def parse_requirement_lines(lines):
         else:
             marker = ''
 
-        req_setup = req.name \
-            + (
+        req_setup = req.name
+        if include_specs:
+            req_setup += (
                 ('[' + ', '.join(sorted(req.extras)) + ']' if req.extras else '')
                 + ' '
                 + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
-            ).rstrip() \
-            + ('; ' + marker if marker else '')
+            ).rstrip()
+        if include_markers:
+            req_setup += ('; ' + marker if marker else '')
 
         requires.append(req_setup.strip())
 
