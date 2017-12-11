@@ -9,6 +9,7 @@ entry points during for editable installations.
 """
 
 import configparser
+import glob2
 import os
 import pip
 try:
@@ -38,18 +39,20 @@ class PackageMetadata(object):
         self.description = ''
         self.long_description = ''
         self.version = ''
+        self.package_data = {}
         self.install_requires = []
         self.extras_require = {}
         self.tests_require = []
         self.dependency_links = []
 
 
-def get_package_metadata(dirname, package_name):
+def get_package_metadata(dirname, package_name, package_data_filename_patterns=None):
     """ Get meta data about a package
 
     Args:
         dirname (:obj:`str`): path to the package
-        package_name (:obj:`str`): package name       
+        package_name (:obj:`str`): package name
+        package_data_filename_patterns (:obj:`dict`, optional): package name, optionally with glob patterns in the filenames
 
     Returns:
         :obj:`PackageMetadata`: meta data
@@ -64,6 +67,9 @@ def get_package_metadata(dirname, package_name):
 
     # get version
     md.version = get_version(dirname, package_name)
+
+    # get data files
+    md.package_data = expand_package_data_filename_patterns(dirname, package_data_filename_patterns=package_data_filename_patterns)
 
     # get dependencies
     md.install_requires, md.extras_require, md.tests_require, md.dependency_links = get_dependencies(dirname)
@@ -110,6 +116,26 @@ def get_version(dirname, package_name):
     """
     with open(os.path.join(dirname, package_name, 'VERSION'), 'r') as file:
         return file.read().strip()
+
+
+def expand_package_data_filename_patterns(dirname, package_data_filename_patterns=None):
+    """ Expand the package data filenames
+
+    Args:
+        :obj:`dict`: package data
+    """
+    package_data_filename_patterns = package_data_filename_patterns or {}
+    package_data = {}
+    for module, filename_patterns in package_data_filename_patterns.items():
+        module_filenames = []
+
+        for filename_pattern in filename_patterns:
+            for filename in glob2.iglob(os.path.join(dirname, module, filename_pattern), include_hidden=True, recursive=True):
+                if os.path.isfile(filename):
+                    module_filenames.append(os.path.relpath(filename, os.path.join(dirname, module)))
+
+        package_data[module] = sorted(set(module_filenames))
+    return package_data
 
 
 def get_dependencies(dirname, include_extras=True, include_specs=True, include_markers=True):
@@ -237,7 +263,8 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
                 else:
                     if option is None:
                         raise Exception("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
-                    tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+                    tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras,
+                                                         include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
                         extras_require[option] = []
                     extras_require[option] += tmp1
@@ -316,7 +343,11 @@ def install_dependencies(dependencies, upgrade=False):
         dependencies (:obj:`list`): list of dependencies
         upgrade (:obj:`bool`, optional): if :obj:`True`, upgrade package
     """
-    pip.main(['install'] + ['-U' if upgrade else ''] + dependencies)
+    cmd = ['install']
+    if upgrade:
+        cmd.append('-U')
+    cmd += dependencies
+    pip.main(cmd)
 
 
 def get_console_scripts(dirname, package_name):

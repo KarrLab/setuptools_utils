@@ -1,2 +1,3 @@
 configparser
+glob2
 git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser

@@ -168,6 +168,215 @@ class TestCase(unittest.TestCase):
     def test_get_version(self):
         self.assertEqual(pkg_utils.get_version(self.dirname, 'package'), '0.0.1')
 
+    def test_expand_package_data_filename_patterns(self):
+        def touch(filename):
+            with open(filename, 'w') as file:
+                pass
+
+        os.mkdir(os.path.join(self.dirname, 'pkg1'))
+        os.mkdir(os.path.join(self.dirname, 'pkg1', 'dir1a'))
+        os.mkdir(os.path.join(self.dirname, 'pkg1', 'dir1b'))
+        os.mkdir(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1c'))
+        os.mkdir(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1d'))
+        os.mkdir(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1d', 'dir1e'))
+        os.mkdir(os.path.join(self.dirname, 'pkg2'))
+        os.mkdir(os.path.join(self.dirname, 'pkg2', 'dir2a'))
+        os.mkdir(os.path.join(self.dirname, 'pkg2', 'dir2b'))
+        os.mkdir(os.path.join(self.dirname, 'pkg3'))
+        os.mkdir(os.path.join(self.dirname, 'pkg3', 'dir3a'))
+        os.mkdir(os.path.join(self.dirname, 'pkg3', 'dir3a', 'dir3b'))
+        os.mkdir(os.path.join(self.dirname, 'pkg3', 'dir3a', 'dir3b', 'dir3c'))
+        os.mkdir(os.path.join(self.dirname, 'pkg3', 'dir3d'))
+
+        touch(os.path.join(self.dirname, 'pkg1', 'file-1.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'file-0.pdf'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1a', 'file1.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1a', 'file2.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1a', 'file3.pdf'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1a', 'file4.pdf'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'file5.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'file6.pdf'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1c', 'file7.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1c', 'file8.pdf'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1d', 'dir1e', 'file9.txt'))
+        touch(os.path.join(self.dirname, 'pkg1', 'dir1b', 'dir1d', 'dir1e', 'file10.pdf'))
+
+        touch(os.path.join(self.dirname, 'pkg3', 'dir3a', 'file11.txt'))
+        touch(os.path.join(self.dirname, 'pkg3', 'dir3a', 'dir3b', 'file12.pdf'))
+        touch(os.path.join(self.dirname, 'pkg3', 'dir3a', 'dir3b', 'dir3c', 'file13.txt'))
+        touch(os.path.join(self.dirname, 'pkg3', 'dir3d', 'file14.pdf'))
+
+        self.assertEqual(pkg_utils.core.expand_package_data_filename_patterns(self.dirname), {})
+
+        package_data_filename_patterns = {
+            'pkg1': [
+                '*',
+                '**/*',
+            ],
+            'pkg2': [
+                '*',
+                '**/*',
+            ],
+            'pkg3': [
+                '*',
+                '**/*',
+            ],
+        }
+        package_data = pkg_utils.core.expand_package_data_filename_patterns(self.dirname,
+                                                                            package_data_filename_patterns=package_data_filename_patterns)
+
+        self.assertEqual(package_data, {
+            'pkg1': sorted([
+                os.path.join('file-1.txt'),
+                os.path.join('file-0.pdf'),
+                os.path.join('dir1a', 'file1.txt'),
+                os.path.join('dir1a', 'file2.txt'),
+                os.path.join('dir1a', 'file3.pdf'),
+                os.path.join('dir1a', 'file4.pdf'),
+                os.path.join('dir1b', 'file5.txt'),
+                os.path.join('dir1b', 'file6.pdf'),
+                os.path.join('dir1b', 'dir1c', 'file7.txt'),
+                os.path.join('dir1b', 'dir1c', 'file8.pdf'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file9.txt'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file10.pdf'),
+            ]),
+            'pkg2': [],
+            'pkg3': sorted([
+                os.path.join('dir3a', 'file11.txt'),
+                os.path.join('dir3a', 'dir3b', 'file12.pdf'),
+                os.path.join('dir3a', 'dir3b', 'dir3c', 'file13.txt'),
+                os.path.join('dir3d', 'file14.pdf'),
+            ]),
+        })
+
+        package_data_filename_patterns = {
+            'pkg1': [
+                'dir1b/**/*',
+            ],
+            'pkg3': [
+                '*',
+                'dir3a/**/dir3c/*',
+            ],
+        }
+        package_data = pkg_utils.core.expand_package_data_filename_patterns(self.dirname,
+                                                                            package_data_filename_patterns=package_data_filename_patterns)
+
+        self.assertEqual(package_data, {
+            'pkg1': sorted([
+                os.path.join('dir1b', 'file5.txt'),
+                os.path.join('dir1b', 'file6.pdf'),
+                os.path.join('dir1b', 'dir1c', 'file7.txt'),
+                os.path.join('dir1b', 'dir1c', 'file8.pdf'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file9.txt'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file10.pdf'),
+            ]),
+            'pkg3': sorted([
+                os.path.join('dir3a', 'dir3b', 'dir3c', 'file13.txt'),
+            ]),
+        })
+
+        self.assertEqual(pkg_utils.core.expand_package_data_filename_patterns(self.dirname, package_data_filename_patterns={
+            'pkg1': [
+                '*',
+            ],
+            'pkg2': [
+                '*',
+            ],
+            'pkg3': [
+                '*',
+            ],
+        }), {
+            'pkg1': sorted([
+                os.path.join('file-1.txt'),
+                os.path.join('file-0.pdf'),
+            ]),
+            'pkg2': [],
+            'pkg3': sorted([
+            ]),
+        })
+
+        package_data_filename_patterns = {
+            'pkg1': [
+                '**/*',
+            ],
+            'pkg2': [
+                '**/*',
+            ],
+            'pkg3': [
+                '**/*',
+            ],
+        }
+        package_data = pkg_utils.core.expand_package_data_filename_patterns(
+            self.dirname, package_data_filename_patterns=package_data_filename_patterns)
+        self.assertEqual(package_data, {
+            'pkg1': sorted([
+                os.path.join('file-1.txt'),
+                os.path.join('file-0.pdf'),
+                os.path.join('dir1a', 'file1.txt'),
+                os.path.join('dir1a', 'file2.txt'),
+                os.path.join('dir1a', 'file3.pdf'),
+                os.path.join('dir1a', 'file4.pdf'),
+                os.path.join('dir1b', 'file5.txt'),
+                os.path.join('dir1b', 'file6.pdf'),
+                os.path.join('dir1b', 'dir1c', 'file7.txt'),
+                os.path.join('dir1b', 'dir1c', 'file8.pdf'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file9.txt'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file10.pdf'),
+            ]),
+            'pkg2': [],
+            'pkg3': sorted([
+                os.path.join('dir3a', 'file11.txt'),
+                os.path.join('dir3a', 'dir3b', 'file12.pdf'),
+                os.path.join('dir3a', 'dir3b', 'dir3c', 'file13.txt'),
+                os.path.join('dir3d', 'file14.pdf'),
+            ]),
+        })
+
+        self.assertEqual(pkg_utils.core.expand_package_data_filename_patterns(self.dirname, package_data_filename_patterns={
+            'pkg1': [
+                '*.txt',
+                '**/*.txt',
+            ],
+            'pkg2': [
+                '*.txt',
+                '**/*.txt',
+            ],
+            'pkg3': [
+                '*.txt',
+                '**/*.txt',
+            ],
+        }), {
+            'pkg1': sorted([
+                os.path.join('file-1.txt'),
+                os.path.join('dir1a', 'file1.txt'),
+                os.path.join('dir1a', 'file2.txt'),
+                os.path.join('dir1b', 'file5.txt'),
+                os.path.join('dir1b', 'dir1c', 'file7.txt'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file9.txt'),
+            ]),
+            'pkg2': [],
+            'pkg3': sorted([
+                os.path.join('dir3a', 'file11.txt'),
+                os.path.join('dir3a', 'dir3b', 'dir3c', 'file13.txt'),
+            ]),
+        })
+
+        self.assertEqual(pkg_utils.core.expand_package_data_filename_patterns(self.dirname, package_data_filename_patterns={
+            'pkg1': [
+                '*.pdf',
+                '**/*.pdf',
+            ],
+        }), {
+            'pkg1': sorted([
+                os.path.join('file-0.pdf'),
+                os.path.join('dir1a', 'file3.pdf'),
+                os.path.join('dir1a', 'file4.pdf'),
+                os.path.join('dir1b', 'file6.pdf'),
+                os.path.join('dir1b', 'dir1c', 'file8.pdf'),
+                os.path.join('dir1b', 'dir1d', 'dir1e', 'file10.pdf'),
+            ]),
+        })
+
     def test_parse_requirements_file(self):
         reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'requirements.txt'))
         self.assertEqual(reqs, [
@@ -298,7 +507,7 @@ class TestCase(unittest.TestCase):
             },
             'entry3': {
                 'function': 'package.__main__3:main',
-             },
+            },
         })
 
         # add no additional console scripts
