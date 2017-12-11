@@ -5,6 +5,11 @@ except:
     import pip
     pip.main(['install', 'configparser'])
 try:
+    import glob2
+except:
+    import pip
+    pip.main(['install', 'glob2'])
+try:
     import requirements
 except:
     import pip
