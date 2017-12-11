@@ -461,6 +461,7 @@ class TestCase(unittest.TestCase):
 
     def test_install_dependencies(self):
         pkg_utils.install_dependencies(['setuptools'])
+        pkg_utils.install_dependencies(['setuptools'], upgrade=True)
 
     def test_get_console_scripts(self):
         os.mkdir(os.path.join(self.dirname, 'package.egg-info'))
