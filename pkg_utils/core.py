@@ -336,16 +336,19 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
     return (requires, dependency_links)
 
 
-def install_dependencies(dependencies, upgrade=False):
+def install_dependencies(dependencies, upgrade=False, process_dependency_links=True):
     """ Install dependencies
 
     Args:
         dependencies (:obj:`list`): list of dependencies
         upgrade (:obj:`bool`, optional): if :obj:`True`, upgrade package
+        process_dependency_links (:obj:`bool`, optional): :obj:`True`, process dependency links
     """
     cmd = ['install']
     if upgrade:
         cmd.append('-U')
+    if process_dependency_links:
+        cmd.append('--process-dependency-links')
     cmd += dependencies
     pip.main(cmd)
 
