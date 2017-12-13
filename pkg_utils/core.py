@@ -327,9 +327,9 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
 
         if req.uri:
             if req.revision:
-                dependency_link = req.uri + '@' + req.revision
+                dependency_link = req.uri + '@' + req.revision + '#egg=' + req.name
             else:
-                dependency_link = req.uri
+                dependency_link = req.uri + '#egg=' + req.name
 
             dependency_links.append(dependency_link)
 

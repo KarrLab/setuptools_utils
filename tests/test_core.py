@@ -125,12 +125,12 @@ class TestCase(unittest.TestCase):
         })
 
         self.assertEqual(md.dependency_links, [
-            'git+https://github.com/opt/req10.git@branch',
-            'git+https://github.com/opt/req14.git',
-            'git+https://github.com/opt/req15.git',
-            'git+https://github.com/opt/req16.git',
-            'git+https://github.com/opt/req17.git',
-            'git+https://github.com/opt/req18.git@branch',
+            'git+https://github.com/opt/req10.git@branch#egg=req10',
+            'git+https://github.com/opt/req14.git#egg=req14',
+            'git+https://github.com/opt/req15.git#egg=req15',
+            'git+https://github.com/opt/req16.git#egg=req16',
+            'git+https://github.com/opt/req17.git#egg=req17',
+            'git+https://github.com/opt/req18.git@branch#egg=req18',
         ])
 
     def test_get_package_metadata_tests_require_error(self):
@@ -409,11 +409,11 @@ class TestCase(unittest.TestCase):
             'req18',
         ])
         self.assertEqual(sorted(links), [
-            'git+https://github.com/opt/req14.git',
-            'git+https://github.com/opt/req15.git',
-            'git+https://github.com/opt/req16.git',
-            'git+https://github.com/opt/req17.git',
-            'git+https://github.com/opt/req18.git@branch',
+            'git+https://github.com/opt/req14.git#egg=req14',
+            'git+https://github.com/opt/req15.git#egg=req15',
+            'git+https://github.com/opt/req16.git#egg=req16',
+            'git+https://github.com/opt/req17.git#egg=req17',
+            'git+https://github.com/opt/req18.git@branch#egg=req18',
         ])
 
         reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'NONE'))
@@ -433,7 +433,7 @@ class TestCase(unittest.TestCase):
             ],
         })
         self.assertEqual(links, [
-            'git+https://github.com/opt/req10.git@branch',
+            'git+https://github.com/opt/req10.git@branch#egg=req10',
         ])
 
         reqs, links = pkg_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'NONE'))
