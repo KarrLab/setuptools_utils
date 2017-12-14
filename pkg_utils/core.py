@@ -58,7 +58,7 @@ def get_package_metadata(dirname, package_name, package_data_filename_patterns=N
         :obj:`PackageMetadata`: meta data
 
     Raises:
-        :obj:`Exception:` if test or documentation dependencies are defined in `requirements.optional.txt`
+        :obj:`ValueError:` if test or documentation dependencies are defined in `requirements.optional.txt`
     """
     md = PackageMetadata()
 
@@ -174,9 +174,9 @@ def get_dependencies(dirname, include_extras=True, include_specs=True, include_m
     dependency_links += tmp
 
     if 'tests' in extras_require and extras_require['tests']:
-        raise Exception('Test dependencies should be defined in `tests/requirements`')
+        raise ValueError('Test dependencies should be defined in `tests/requirements`')
     if 'docs' in extras_require and extras_require['docs']:
-        raise Exception('Documentation dependencies should be defined in `docs/requirements`')
+        raise ValueError('Documentation dependencies should be defined in `docs/requirements`')
 
     extras_require['tests'] = tests_require
     extras_require['docs'] = docs_require
@@ -243,7 +243,7 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
         :obj:`list` of :obj:`str`: dependency links
 
     Raises:
-        :obj:`Exception`: if a line cannot be parsed
+        :obj:`ValueError`: if a line cannot be parsed
     """
     option = None
     extras_require = {}
@@ -258,11 +258,11 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
                 if line[0] == '[':
                     match = re.match('^\[([a-zA-Z0-9-_]+)\]$', line)
                     if not match:
-                        raise Exception('Could not parse optional dependency: {}'.format(line))
+                        raise ValueError('Could not parse optional dependency: {}'.format(line))
                     option = match.group(1)
                 else:
                     if option is None:
-                        raise Exception("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
+                        raise ValueError("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
                     tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras,
                                                          include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
@@ -287,33 +287,49 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
         :obj:`list` of :obj:`str` of :obj:`str`: dependency links
 
     Raises:
-        :obj:`Exception`: if a line cannot be parse
+        :obj:`ValueError`: if a line cannot be parse
     """
     requires = []
     dependency_links = []
 
     for line in lines:
-        if not line.strip() or line.strip()[0] == '#':
+        # strip white space
+        line = line.strip()
+
+        # stop processing if the line is empty or only contains comments
+        if not line or line.startswith('#'):
             continue
 
-        req = requirements.parser.Requirement.parse_line(line)
-        if not req.name or not re.match('^[a-zA-Z0-9_]+$', req.name):
-            raise Exception('Dependency could not be parsed: {}'.format(line))
-
-        line = req.line
-        if '#egg=' in line:
-            if line.find('#') < line.find('#egg='):
-                line = line[0:line.find('#')]  # pragma: no cover # unreachable because this can't be parsed by requirements
-            else:
-                line = line[0:line.find('#', line.find('#egg=')+5)]
+        # get version hints from `egg` metadata. This must be done because (a) pip's ``--process-dependency-links``
+        # option requires a version hint and (b) the `requirements` package doesn't support version hints.
+        match = re.search(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', line, re.IGNORECASE)
+        if match:
+            version_hint = match.group(2)
+            line = re.sub(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', r'egg=\1', line, re.IGNORECASE)
         else:
-            if '#' in line:
-                line = line[0:line.find('#')]
+            version_hint = None
+
+        # parse line
+        req = requirements.parser.Requirement.parse_line(line)
+        line = req.line
+
+        # check that name is valid and we support all of the features needed to install the dependency
+        if not req.name or not re.match('^[a-zA-Z0-9_]+$', req.name):
+            raise ValueError('Dependency could not be parsed: {}'.format(line))
+
+        if line.startswith('-e ') or req.editable:
+            raise ValueError('Editable option is not supported')
+
+        if req.local_file:
+            raise ValueError('Local file option is not supported')
+
+        # get specifiers/markers
         if ';' in line:
             marker = line[line.find(';')+1:].strip()
         else:
             marker = ''
 
+        # append dependency to requirements list with extras, specs, and specifiers/markers
         req_setup = req.name
         if include_extras and req.extras:
             req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
@@ -322,14 +338,28 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
         req_setup = req_setup.rstrip()
         if include_markers and marker:
             req_setup += '; ' + marker
-
         requires.append(req_setup.strip())
 
+        # get dependency link
         if req.uri:
+            dependency_link = req.uri
+
             if req.revision:
-                dependency_link = req.uri + '@' + req.revision + '#egg=' + req.name
-            else:
-                dependency_link = req.uri + '#egg=' + req.name
+                dependency_link += '@' + req.revision
+
+            dependency_link += '#egg=' + req.name
+
+            # add version information to dependency link because pip's ``--process-dependency-links``
+            # option requires a version hint.
+            if not version_hint:
+                raise ValueError('Version hints must be provided for packages from non-PyPI sources')
+            dependency_link += '-' + version_hint
+
+            if req.subdirectory:
+                dependency_link += '&subdirectory=' + req.subdirectory
+
+            if req.hash and req.hash_name:
+                dependency_link += '&' + req.hash_name + '=' + req.hash
 
             dependency_links.append(dependency_link)
 

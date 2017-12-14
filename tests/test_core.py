@@ -44,7 +44,7 @@ class TestCase(unittest.TestCase):
             file.write('[package_opt_2]\n')
             file.write('req8[opt8a,opt8b]\n')
             file.write('req9[opt9a, opt9b]\n')
-            file.write('git+https://github.com/opt/req10.git@branch#egg=req10[option10] #comment\n')
+            file.write('git+https://github.com/opt/req10.git@branch#egg=req10-10.1.2[option10] #comment\n')
 
         with open(os.path.join(dirname, 'tests', 'requirements.txt'), 'w') as file:
             file.write('req9\n')
@@ -58,11 +58,11 @@ class TestCase(unittest.TestCase):
             file.write('req11 #comment\n')
             file.write('req12[opt12a, opt12b] <=1.0,>=2.0; python_version>="2.7"\n')
             file.write('req13[opt13a,opt13b]; python_version >= "2.7"\n')
-            file.write('git+https://github.com/opt/req14.git#egg=req14[opt13a,opt13b]; python_version >= "2.7"\n')
-            file.write('git+https://github.com/opt/req15.git#egg=req15 ; python_version >= "2.7"\n')
-            file.write('git+https://github.com/opt/req16.git#egg=req16\n')
-            file.write('git+https://github.com/opt/req17.git#egg=req17 #comment\n')
-            file.write('git+https://github.com/opt/req18.git@branch#egg=req18 #comment\n')
+            file.write('git+https://github.com/opt/req14.git#egg=req14-14.1.2[opt13a,opt13b]; python_version >= "2.7"\n')
+            file.write('git+https://github.com/opt/req15.git#egg=req15-15.1.2 ; python_version >= "2.7"\n')
+            file.write('git+https://github.com/opt/req16.git#egg=req16-16.1.2\n')
+            file.write('git+https://github.com/opt/req17.git#egg=req17-17.1.2 #comment\n')
+            file.write('git+https://github.com/opt/req18.git@branch#egg=req18-18.1.2 #comment\n')
 
     def tearDown(self):
         shutil.rmtree(self.dirname)
@@ -125,12 +125,12 @@ class TestCase(unittest.TestCase):
         })
 
         self.assertEqual(md.dependency_links, [
-            'git+https://github.com/opt/req10.git@branch#egg=req10',
-            'git+https://github.com/opt/req14.git#egg=req14',
-            'git+https://github.com/opt/req15.git#egg=req15',
-            'git+https://github.com/opt/req16.git#egg=req16',
-            'git+https://github.com/opt/req17.git#egg=req17',
-            'git+https://github.com/opt/req18.git@branch#egg=req18',
+            'git+https://github.com/opt/req10.git@branch#egg=req10-10.1.2',
+            'git+https://github.com/opt/req14.git#egg=req14-14.1.2',
+            'git+https://github.com/opt/req15.git#egg=req15-15.1.2',
+            'git+https://github.com/opt/req16.git#egg=req16-16.1.2',
+            'git+https://github.com/opt/req17.git#egg=req17-17.1.2',
+            'git+https://github.com/opt/req18.git@branch#egg=req18-18.1.2',
         ])
 
     def test_get_package_metadata_tests_require_error(self):
@@ -138,7 +138,7 @@ class TestCase(unittest.TestCase):
             file.write('[tests]\n')
             file.write('req1\n')
 
-        with self.assertRaisesRegexp(Exception, '^Test dependencies should be defined in `tests/requirements`$'):
+        with self.assertRaisesRegexp(ValueError, '^Test dependencies should be defined in `tests/requirements`$'):
             pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_get_package_metadata_docs_require_error(self):
@@ -146,7 +146,7 @@ class TestCase(unittest.TestCase):
             file.write('[docs]\n')
             file.write('req1\n')
 
-        with self.assertRaisesRegexp(Exception, '^Documentation dependencies should be defined in `docs/requirements`$'):
+        with self.assertRaisesRegexp(ValueError, '^Documentation dependencies should be defined in `docs/requirements`$'):
             pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_PackageMetadata(self):
@@ -409,11 +409,11 @@ class TestCase(unittest.TestCase):
             'req18',
         ])
         self.assertEqual(sorted(links), [
-            'git+https://github.com/opt/req14.git#egg=req14',
-            'git+https://github.com/opt/req15.git#egg=req15',
-            'git+https://github.com/opt/req16.git#egg=req16',
-            'git+https://github.com/opt/req17.git#egg=req17',
-            'git+https://github.com/opt/req18.git@branch#egg=req18',
+            'git+https://github.com/opt/req14.git#egg=req14-14.1.2',
+            'git+https://github.com/opt/req15.git#egg=req15-15.1.2',
+            'git+https://github.com/opt/req16.git#egg=req16-16.1.2',
+            'git+https://github.com/opt/req17.git#egg=req17-17.1.2',
+            'git+https://github.com/opt/req18.git@branch#egg=req18-18.1.2',
         ])
 
         reqs, links = pkg_utils.parse_requirements_file(os.path.join(self.dirname, 'NONE'))
@@ -433,7 +433,7 @@ class TestCase(unittest.TestCase):
             ],
         })
         self.assertEqual(links, [
-            'git+https://github.com/opt/req10.git@branch#egg=req10',
+            'git+https://github.com/opt/req10.git@branch#egg=req10-10.1.2',
         ])
 
         reqs, links = pkg_utils.parse_optional_requirements_file(os.path.join(self.dirname, 'NONE'))
@@ -445,19 +445,45 @@ class TestCase(unittest.TestCase):
 
         with open(filename, 'w') as file:
             file.write('[package_opt_1] #\n')
-        with self.assertRaisesRegexp(Exception, '^Could not parse optional dependency: '):
+        with self.assertRaisesRegexp(ValueError, '^Could not parse optional dependency: '):
             pkg_utils.parse_optional_requirements_file(filename)
 
         with open(filename, 'w') as file:
             file.write('req1\n')
             file.write('[option1]\n')
             file.write('[req2]\n')
-        with self.assertRaisesRegexp(Exception, '^Required dependencies should be not be '):
+        with self.assertRaisesRegexp(ValueError, '^Required dependencies should be not be '):
             pkg_utils.parse_optional_requirements_file(filename)
 
-    def test_parse_requirement_lines_error(self):
-        with self.assertRaisesRegexp(Exception, '^Dependency could not be parsed: '):
+    def test_parse_requirement_with_subdirectory(self):
+        reqs, links = pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1-1.1.2&subdirectory=subdir'])
+        self.assertEqual(reqs, ['req1'])
+        self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.1.2&subdirectory=subdir'])
+
+    def test_parse_requirement_with_hash_option(self):
+        reqs, links = pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
+        self.assertEqual(reqs, ['req1'])
+        self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
+
+    def test_parse_requirement_invalid_comment_before_egg(self):
+        with self.assertRaisesRegexp(ValueError, ''):
             pkg_utils.parse_requirement_lines(['req2 #git+https://github.com/opt/req1.git#egg=req1'])
+
+    def test_parse_requirement_invalid_name(self):
+        with self.assertRaisesRegexp(ValueError, 'Dependency could not be parsed:'):
+            pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req-ui-r-ment'])
+
+    def test_parse_requirement_with_editable_option(self):
+        with self.assertRaisesRegexp(ValueError, 'Editable option is not supported'):
+            pkg_utils.parse_requirement_lines(['-e git+https://github.com/opt/req1.git#egg=req1'])
+
+    def test_parse_requirement_local_file_option(self):
+        with self.assertRaisesRegexp(ValueError, 'Local file option is not supported'):
+            pkg_utils.parse_requirement_lines(['local_dir/req1.git#egg=req1'])
+
+    def test_parse_requirement_without_version_hint(self):
+        with self.assertRaisesRegexp(ValueError, 'Version hints must be provided'):
+            pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1'])
 
     def test_install_dependencies(self):
         pkg_utils.install_dependencies(['setuptools'])
