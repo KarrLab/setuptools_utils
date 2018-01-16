@@ -30,7 +30,7 @@ package_data = {
 }
 
 # convert README.md to README.rst
-# pkg_utils.convert_readme_md_to_rst(dirname)
+pkg_utils.convert_readme_md_to_rst(dirname)
 
 # get package metadata
 md = pkg_utils.get_package_metadata(dirname, name, package_data_filename_patterns=package_data)
