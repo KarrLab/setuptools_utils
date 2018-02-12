@@ -2,7 +2,7 @@ configparser
 glob2
 git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser-0.1.0
 six
-sphinx >= 1.6
+sphinx >= 1.7
 sphinx_rtd_theme
 robpol86_sphinxcontrib_googleanalytics
 sphinxcontrib_bibtex
