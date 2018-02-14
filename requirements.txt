@@ -1,3 +1,5 @@
 configparser
 glob2
+pip
 git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser-0.1.0
+setuptools
