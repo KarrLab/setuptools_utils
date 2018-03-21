@@ -17,6 +17,9 @@ jobs:
 
       # Python 2 installation tasks
       - run:
+          name: Ensure pip (Python 2)
+          command: python2 -m ensurepip
+      - run:
           name: Install pkg_utils (Python 2)
           command: pip2 install -U --process-dependency-links -e .[all]
       - run:
@@ -27,6 +30,9 @@ jobs:
           command: karr_lab_build_utils2 upgrade-requirements
 
       # Python 3 installation tasks
+      - run:
+          name: Ensure pip (Python 3)
+          command: python3 -m ensurepip
       - run:
           name: Install pkg_utils (Python 3)
           command: pip3 install -U --process-dependency-links -e .[all]
