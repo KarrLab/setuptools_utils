@@ -1,5 +1,5 @@
 configparser
 glob2
-pip <= 9.0.1
+pip >= 10.0.1
 git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser-0.1.0
 setuptools

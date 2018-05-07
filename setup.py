@@ -2,18 +2,18 @@
 try:
     import configparser
 except:
-    import pip
-    pip.main(['install', 'configparser'])
+    import pip._internal
+    pip._internal.main(['install', 'configparser'])
 try:
     import glob2
 except:
-    import pip
-    pip.main(['install', 'glob2'])
+    import pip._internal
+    pip._internal.main(['install', 'glob2'])
 try:
     import requirements
 except:
-    import pip
-    pip.main(['install', 'git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser'])
+    import pip._internal
+    pip._internal.main(['install', 'git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser'])
 
 # import
 import os
