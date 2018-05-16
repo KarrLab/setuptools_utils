@@ -1,5 +1,6 @@
 downstream_dependencies:
   - conv_opt
+  - datanator_website
   - gdoc_down
   - h1_hesc
   - intro_to_wc_modeling
@@ -8,10 +9,17 @@ downstream_dependencies:
   - mycoplasma_pneumoniae
   - nose2unitth
   - obj_model
+  - rand_wc_model_gen
   - unitth
+  - wc
+  - wc_analysis
+  - wc_kb
+  - wc_kb_gen
   - wc_lang
+  - wc_model_gen
   - wc_rules
   - wc_sim
+  - wc_test
   - wc_utils
 email_notifications:
   - jonrkarr@gmail.com
