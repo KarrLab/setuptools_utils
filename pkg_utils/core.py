@@ -253,7 +253,7 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
         with open(filename, 'r') as file:
             for line in file:
                 line = line.strip()
-                if not line:
+                if not line or line[0] == '#':
                     continue
                 if line[0] == '[':
                     match = re.match('^\[([a-zA-Z0-9-_]+)\]$', line)

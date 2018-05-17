@@ -38,6 +38,7 @@ class TestCase(unittest.TestCase):
             file.write('req4; python_version > "2.6"\n')
 
         with open(os.path.join(dirname, 'requirements.optional.txt'), 'w') as file:
+            file.write('#comment\n')
             file.write('[package_opt_1]\n')
             file.write('req7\n')
             file.write('\n')
