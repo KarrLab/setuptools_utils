@@ -452,7 +452,7 @@ class TestCase(unittest.TestCase):
             file.write('req1\n')
             file.write('[option1]\n')
             file.write('[req2]\n')
-        with self.assertRaisesRegexp(ValueError, '^Required dependencies should be not be '):
+        with self.assertRaisesRegexp(ValueError, '^Required dependencies should not be '):
             pkg_utils.parse_optional_requirements_file(filename)
 
     def test_parse_requirement_with_subdirectory(self):

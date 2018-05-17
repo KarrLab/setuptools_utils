@@ -262,7 +262,7 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
                     option = match.group(1)
                 else:
                     if option is None:
-                        raise ValueError("Required dependencies should be not be place in an optional dependencies file: {}".format(line))
+                        raise ValueError("Required dependencies should not be placed in an optional dependencies file: {}".format(line))
                     tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras,
                                                          include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
