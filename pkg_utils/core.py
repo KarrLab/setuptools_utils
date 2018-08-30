@@ -17,7 +17,7 @@ try:
 except ImportError:  # pragma: no cover
     pypandoc = None  # pragma: no cover
 import re
-import requirements
+import requirements.parser
 
 
 class PackageMetadata(object):
