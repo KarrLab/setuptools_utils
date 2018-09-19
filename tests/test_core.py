@@ -139,7 +139,7 @@ class TestCase(unittest.TestCase):
             file.write('[tests]\n')
             file.write('req1\n')
 
-        with self.assertRaisesRegexp(ValueError, '^Test dependencies should be defined in `tests/requirements`$'):
+        with self.assertRaisesRegex(ValueError, '^Test dependencies should be defined in `tests/requirements`$'):
             pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_get_package_metadata_docs_require_error(self):
@@ -147,7 +147,7 @@ class TestCase(unittest.TestCase):
             file.write('[docs]\n')
             file.write('req1\n')
 
-        with self.assertRaisesRegexp(ValueError, '^Documentation dependencies should be defined in `docs/requirements`$'):
+        with self.assertRaisesRegex(ValueError, '^Documentation dependencies should be defined in `docs/requirements`$'):
             pkg_utils.get_package_metadata(self.dirname, 'package')
 
     def test_PackageMetadata(self):
@@ -446,14 +446,14 @@ class TestCase(unittest.TestCase):
 
         with open(filename, 'w') as file:
             file.write('[package_opt_1] #\n')
-        with self.assertRaisesRegexp(ValueError, '^Could not parse optional dependency: '):
+        with self.assertRaisesRegex(ValueError, '^Could not parse optional dependency: '):
             pkg_utils.parse_optional_requirements_file(filename)
 
         with open(filename, 'w') as file:
             file.write('req1\n')
             file.write('[option1]\n')
             file.write('[req2]\n')
-        with self.assertRaisesRegexp(ValueError, '^Required dependencies should not be '):
+        with self.assertRaisesRegex(ValueError, '^Required dependencies should not be '):
             pkg_utils.parse_optional_requirements_file(filename)
 
     def test_parse_requirement_with_subdirectory(self):
@@ -467,23 +467,23 @@ class TestCase(unittest.TestCase):
         self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
 
     def test_parse_requirement_invalid_comment_before_egg(self):
-        with self.assertRaisesRegexp(ValueError, ''):
+        with self.assertRaisesRegex(ValueError, ''):
             pkg_utils.parse_requirement_lines(['req2 #git+https://github.com/opt/req1.git#egg=req1'])
 
     def test_parse_requirement_invalid_name(self):
-        with self.assertRaisesRegexp(ValueError, 'Dependency could not be parsed:'):
+        with self.assertRaisesRegex(ValueError, 'Dependency could not be parsed:'):
             pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req-ui-r-ment'])
 
     def test_parse_requirement_with_editable_option(self):
-        with self.assertRaisesRegexp(ValueError, 'Editable option is not supported'):
+        with self.assertRaisesRegex(ValueError, 'Editable option is not supported'):
             pkg_utils.parse_requirement_lines(['-e git+https://github.com/opt/req1.git#egg=req1'])
 
     def test_parse_requirement_local_file_option(self):
-        with self.assertRaisesRegexp(ValueError, 'Local file option is not supported'):
+        with self.assertRaisesRegex(ValueError, 'Local file option is not supported'):
             pkg_utils.parse_requirement_lines(['local_dir/req1.git#egg=req1'])
 
     def test_parse_requirement_without_version_hint(self):
-        with self.assertRaisesRegexp(ValueError, 'Version hints must be provided'):
+        with self.assertRaisesRegex(ValueError, 'Version hints must be provided'):
             pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1'])
 
     def test_install_dependencies(self):
