@@ -1,6 +1,5 @@
 downstream_dependencies:
   - conv_opt
-  - datanator_website
   - gdoc_down
   - h1_hesc
   - intro_to_wc_modeling
