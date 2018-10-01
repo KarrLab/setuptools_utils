@@ -1,11 +1,11 @@
 downstream_dependencies:  
   - conv_opt
+  - datanator
   - datanator_frontend
   - gdoc_down
   - h1_hesc
   - intro_to_wc_modeling
-  - karr_lab_build_utils
-  - kinetic_datanator
+  - karr_lab_build_utils  
   - mycoplasma_pneumoniae
   - nose2unitth
   - obj_model
