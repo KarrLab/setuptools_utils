@@ -149,6 +149,8 @@ def get_dependencies(dirname, include_extras=True, include_specs=True, include_m
 
     Returns:
         :obj:`list` of :obj:`str`: requirements
+        :obj:`list` of :obj:`str`: extra/optional requirements
+        :obj:`list` of :obj:`str`: test requirements
         :obj:`list` of :obj:`str`: dependency links
     """
     dependency_links = []
@@ -284,86 +286,114 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
 
     Returns:
         :obj:`list` of :obj:`str`: requirements
-        :obj:`list` of :obj:`str` of :obj:`str`: dependency links
-
-    Raises:
-        :obj:`ValueError`: if a line cannot be parse
+        :obj:`list` of :obj:`str`: dependency links
     """
     requires = []
     dependency_links = []
 
     for line in lines:
-        # strip white space
-        line = line.strip()
-
-        # stop processing if the line is empty or only contains comments
-        if not line or line.startswith('#'):
-            continue
-
-        # get version hints from `egg` metadata. This must be done because (a) pip's ``--process-dependency-links``
-        # option requires a version hint and (b) the `requirements` package doesn't support version hints.
-        match = re.search(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', line, re.IGNORECASE)
-        if match:
-            version_hint = match.group(2)
-            line = re.sub(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', r'egg=\1', line, re.IGNORECASE)
-        else:
-            version_hint = None
-
-        # parse line
-        req = requirements.parser.Requirement.parse_line(line)
-        line = req.line
-
-        # check that name is valid and we support all of the features needed to install the dependency
-        if not req.name or not re.match('^[a-zA-Z0-9_\.]+$', req.name):
-            raise ValueError('Dependency could not be parsed: {}'.format(line))
-
-        if line.startswith('-e ') or req.editable:
-            raise ValueError('Editable option is not supported')
-
-        if req.local_file:
-            raise ValueError('Local file option is not supported')
-
-        # get specifiers/markers
-        if ';' in line:
-            marker = line[line.find(';')+1:].strip()
-        else:
-            marker = ''
-
-        # append dependency to requirements list with extras, specs, and specifiers/markers
-        req_setup = req.name
-        if include_extras and req.extras:
-            req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
-        if include_specs and req.specs:
-            req_setup += ' ' + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
-        req_setup = req_setup.rstrip()
-        if include_markers and marker:
-            req_setup += '; ' + marker
-        requires.append(req_setup.strip())
-
-        # get dependency link
-        if req.uri:
-            dependency_link = req.uri
-
-            if req.revision:
-                dependency_link += '@' + req.revision
-
-            dependency_link += '#egg=' + req.name
-
-            # add version information to dependency link because pip's ``--process-dependency-links``
-            # option requires a version hint.
-            if not version_hint:
-                raise ValueError('Version hints must be provided for packages from non-PyPI sources')
-            dependency_link += '-' + version_hint
-
-            if req.subdirectory:
-                dependency_link += '&subdirectory=' + req.subdirectory
-
-            if req.hash and req.hash_name:
-                dependency_link += '&' + req.hash_name + '=' + req.hash
-
+        requirement, dependency_link = parse_requirement_line(
+            line, include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+        if requirement:
+            requires.append(requirement)
+        if dependency_link:
             dependency_links.append(dependency_link)
 
     return (requires, dependency_links)
+
+
+def parse_requirement_line(line, include_extras=True, include_specs=True, include_markers=True):
+    """ Parse lines from a requirements.txt file into list of requirements and dependency links
+
+    Args:
+        line (:obj:`str`): line from a requirements.txt file
+        include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
+        include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
+        include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
+
+    Returns:
+        :obj:`str`: requirement
+        :obj:`str`: dependency link
+    """
+
+    # strip white space
+    line = line.strip()
+
+    # stop processing if the line is empty or only contains comments
+    if not line or line.startswith('#'):
+        return (None, None)
+
+    # get version hints from `egg` metadata. This must be done because (a) pip's ``--process-dependency-links``
+    # option requires a version hint and (b) the `requirements` package doesn't support version hints.
+    match = re.search(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', line, re.IGNORECASE)
+    if match:
+        version_hint = match.group(2)
+        line = re.sub(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', r'egg=\1', line, re.IGNORECASE)
+    else:
+        version_hint = None
+
+    # parse line
+    req = requirements.parser.Requirement.parse_line(line)
+    line = req.line
+
+    # check that name is valid and we support all of the features needed to install the dependency
+    if not req.name or not re.match('^[a-zA-Z0-9_\.]+$', req.name):
+        raise ValueError('Dependency could not be parsed: {}'.format(line))
+
+    if line.startswith('-e ') or req.editable:
+        raise ValueError('Editable option is not supported')
+
+    if req.local_file:
+        raise ValueError('Local file option is not supported')
+
+    # get dependency link
+    if req.uri:
+        uri_line = line.replace(req.uri + '#egg=', '')
+        dependency_link = req.uri
+
+        if req.revision:
+            dependency_link += '@' + req.revision
+            uri_line = uri_line.replace('@' + req.revision, '')
+
+        dependency_link += '#egg=' + req.name
+
+        # add version information to dependency link because pip's ``--process-dependency-links``
+        # option requires a version hint.
+        if not version_hint:
+            raise ValueError('Version hints must be provided for packages from non-PyPI sources')
+        dependency_link += '-' + version_hint
+
+        if req.subdirectory:
+            dependency_link += '&subdirectory=' + req.subdirectory
+            uri_line = uri_line.replace('&subdirectory=' + req.subdirectory, '')
+
+        if req.hash and req.hash_name:
+            dependency_link += '&' + req.hash_name + '=' + req.hash
+            uri_line = uri_line.replace('&' + req.hash_name + '=' + req.hash, '')
+
+        uri_req = requirements.parser.Requirement.parse_line(uri_line)
+        req.specs = list(set(req.specs + uri_req.specs))
+    else:
+        dependency_link = None
+
+    # get specifiers/markers
+    if ';' in line:
+        marker = line[line.find(';')+1:].strip()
+    else:
+        marker = ''
+
+    # append dependency to requirements list with extras, specs, and specifiers/markers
+    req_setup = req.name
+    if include_extras and req.extras:
+        req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
+    if include_specs and req.specs:
+        req_setup += ' ' + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
+    req_setup = req_setup.rstrip()
+    if include_markers and marker:
+        req_setup += '; ' + marker
+    requirement = req_setup.strip()
+
+    return (requirement, dependency_link)
 
 
 def install_dependencies(dependencies, upgrade=False, process_dependency_links=True):

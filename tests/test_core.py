@@ -461,9 +461,17 @@ class TestCase(unittest.TestCase):
         self.assertEqual(reqs, ['req1'])
         self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.1.2&subdirectory=subdir'])
 
+        reqs, links = pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1-1.1.2&subdirectory=subdir > 1.1.2'])
+        self.assertEqual(reqs, ['req1 > 1.1.2'])
+        self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.1.2&subdirectory=subdir'])
+
     def test_parse_requirement_with_hash_option(self):
         reqs, links = pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
         self.assertEqual(reqs, ['req1'])
+        self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
+
+        reqs, links = pkg_utils.parse_requirement_lines(['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12 >= 1.1.2'])
+        self.assertEqual(reqs, ['req1 >= 1.1.2'])
         self.assertEqual(links, ['git+https://github.com/opt/req1.git#egg=req1-1.2.3&sha256=44ddfb12'])
 
     def test_parse_requirement_invalid_comment_before_egg(self):
