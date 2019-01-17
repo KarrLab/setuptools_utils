@@ -138,11 +138,12 @@ def expand_package_data_filename_patterns(dirname, package_data_filename_pattern
     return package_data
 
 
-def get_dependencies(dirname, include_extras=True, include_specs=True, include_markers=True):
+def get_dependencies(dirname, include_uri=False, include_extras=True, include_specs=True, include_markers=True):
     """ Parse required and optional dependencies from requirements.txt files
 
     Args:
         dirname (:obj:`str`): path to the package
+        include_uri (:obj:`bool`, optional): if :obj:`True`, include URI in the dependencies list
         include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
@@ -157,22 +158,26 @@ def get_dependencies(dirname, include_extras=True, include_specs=True, include_m
 
     install_requires, tmp = parse_requirements_file(
         os.path.join(dirname, 'requirements.txt'),
-        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+        include_uri=include_uri, include_extras=include_extras,
+        include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     extras_require, tmp = parse_optional_requirements_file(
         os.path.join(dirname, 'requirements.optional.txt'),
-        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+        include_uri=include_uri, include_extras=include_extras,
+        include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     tests_require, tmp = parse_requirements_file(
         os.path.join(dirname, 'tests/requirements.txt'),
-        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+        include_uri=include_uri, include_extras=include_extras,
+        include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     docs_require, tmp = parse_requirements_file(
         os.path.join(dirname, 'docs/requirements.txt'),
-        include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+        include_uri=include_uri, include_extras=include_extras,
+        include_specs=include_specs, include_markers=include_markers)
     dependency_links += tmp
 
     if 'tests' in extras_require and extras_require['tests']:
@@ -210,11 +215,12 @@ def get_dependencies(dirname, include_extras=True, include_specs=True, include_m
     return (install_requires, extras_require, tests_require, dependency_links)
 
 
-def parse_requirements_file(filename, include_extras=True, include_specs=True, include_markers=True):
+def parse_requirements_file(filename, include_uri=False, include_extras=True, include_specs=True, include_markers=True):
     """ Parse a requirements.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_uri (:obj:`bool`, optional): if :obj:`True`, include URI in the dependencies list
         include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
@@ -228,14 +234,17 @@ def parse_requirements_file(filename, include_extras=True, include_specs=True, i
             lines = file.readlines()
     else:
         lines = []
-    return parse_requirement_lines(lines, include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+    return parse_requirement_lines(lines,
+                                   include_uri=include_uri, include_extras=include_extras,
+                                   include_specs=include_specs, include_markers=include_markers)
 
 
-def parse_optional_requirements_file(filename, include_extras=True, include_specs=True, include_markers=True):
+def parse_optional_requirements_file(filename, include_uri=False, include_extras=True, include_specs=True, include_markers=True):
     """ Parse a requirements.optional.txt file into list of requirements and dependency links
 
     Args:
         filename (:obj:`str`): path to requirements.txt file
+        include_uri (:obj:`bool`, optional): if :obj:`True`, include URI in the dependencies list
         include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
@@ -265,7 +274,8 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
                 else:
                     if option is None:
                         raise ValueError("Required dependencies should not be placed in an optional dependencies file: {}".format(line))
-                    tmp1, tmp2 = parse_requirement_lines([line], include_extras=include_extras,
+                    tmp1, tmp2 = parse_requirement_lines([line],
+                                                         include_uri=include_uri, include_extras=include_extras,
                                                          include_specs=include_specs, include_markers=include_markers)
                     if option not in extras_require:
                         extras_require[option] = []
@@ -275,11 +285,12 @@ def parse_optional_requirements_file(filename, include_extras=True, include_spec
     return (extras_require, dependency_links)
 
 
-def parse_requirement_lines(lines, include_extras=True, include_specs=True, include_markers=True):
+def parse_requirement_lines(lines, include_uri=False, include_extras=True, include_specs=True, include_markers=True):
     """ Parse lines from a requirements.txt file into list of requirements and dependency links
 
     Args:
         lines (:obj:`list` of :obj:`str`): lines from a requirements.txt file
+        include_uri (:obj:`bool`, optional): if :obj:`True`, include URI in the dependencies list
         include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
@@ -293,7 +304,8 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
 
     for line in lines:
         requirement, dependency_link = parse_requirement_line(
-            line, include_extras=include_extras, include_specs=include_specs, include_markers=include_markers)
+            line, include_uri=include_uri, include_extras=include_extras,
+            include_specs=include_specs, include_markers=include_markers)
         if requirement:
             requires.append(requirement)
         if dependency_link:
@@ -302,11 +314,12 @@ def parse_requirement_lines(lines, include_extras=True, include_specs=True, incl
     return (requires, dependency_links)
 
 
-def parse_requirement_line(line, include_extras=True, include_specs=True, include_markers=True):
+def parse_requirement_line(line, include_uri=False, include_extras=True, include_specs=True, include_markers=True):
     """ Parse lines from a requirements.txt file into list of requirements and dependency links
 
     Args:
         line (:obj:`str`): line from a requirements.txt file
+        include_uri (:obj:`bool`, optional): if :obj:`True`, include URI in the dependencies list
         include_extras (:obj:`bool`, optional): if :obj:`True`, include extras in the dependencies list
         include_specs (:obj:`bool`, optional): if :obj:`True`, include specifications in the dependencies list
         include_markers (:obj:`bool`, optional): if :obj:`True`, include markers in the dependencies list
@@ -383,16 +396,23 @@ def parse_requirement_line(line, include_extras=True, include_specs=True, includ
         marker = ''
 
     # append dependency to requirements list with extras, specs, and specifiers/markers
-    req_setup = req.name
+    if include_uri and req.uri:
+        req_setup = dependency_link.replace('#egg={}-{}'.format(req.name, version_hint),
+                                            '#egg={}'.format(req.name))
+    else:
+        req_setup = req.name
+
     if include_extras and req.extras:
         req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
+
     if include_specs and req.specs:
         req_setup += ' ' + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
     req_setup = req_setup.rstrip()
+
     if include_markers and marker:
         req_setup += '; ' + marker
-    requirement = req_setup.strip()
 
+    requirement = req_setup.strip()
     return (requirement, dependency_link)
 
 
