@@ -13,7 +13,7 @@ try:
     import requirements
 except:
     import pip._internal
-    pip._internal.main(['install', 'git+https://github.com/davidfischer/requirements-parser.git#egg=requirements_parser'])
+    pip._internal.main(['install', 'requirements_parser'])
 
 # import
 import os
