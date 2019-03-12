@@ -336,8 +336,8 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
     if not line or line.startswith('#'):
         return (None, None)
 
-    # get version hints from `egg` metadata. This must be done because (a) pip's ``--process-dependency-links``
-    # option requires a version hint and (b) the `requirements` package doesn't support version hints.
+    # get version hints from `egg` metadata. This must be done because (a) pip
+    # requires a version hint and (b) the `requirements` package doesn't support version hints.
     match = re.search(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', line, re.IGNORECASE)
     if match:
         version_hint = match.group(2)
@@ -370,8 +370,7 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
 
         dependency_link += '#egg=' + req.name
 
-        # add version information to dependency link because pip's ``--process-dependency-links``
-        # option requires a version hint.
+        # add version information to dependency link because pip requires a version hint.
         if not version_hint:
             raise ValueError('Version hints must be provided for packages from non-PyPI sources')
         dependency_link += '-' + version_hint
@@ -416,19 +415,16 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
     return (requirement, dependency_link)
 
 
-def install_dependencies(dependencies, upgrade=False, process_dependency_links=True):
+def install_dependencies(dependencies, upgrade=False):
     """ Install dependencies
 
     Args:
         dependencies (:obj:`list`): list of dependencies
         upgrade (:obj:`bool`, optional): if :obj:`True`, upgrade package
-        process_dependency_links (:obj:`bool`, optional): :obj:`True`, process dependency links
     """
     cmd = ['install']
     if upgrade:
         cmd.append('-U')
-    if process_dependency_links:
-        cmd.append('--process-dependency-links')
     cmd += dependencies
     pip._internal.main(cmd)
 
