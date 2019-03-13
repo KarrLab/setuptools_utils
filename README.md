@@ -18,12 +18,12 @@ Utilities for linking setuptools with package version metadata, GitHub README.md
     ```
 2. Install this package:
     ```
-    pip install git+git://github.com/KarrLab/pkg_utils#egg=pkg_utils
+    pip install pkg_utils
     ```
 3. Optionally, install support for pandoc to link setuptools with GitHub markdown formatted README.md files:
     ```
     apt-get install pandoc
-    pip install git+git://github.com/KarrLab/pkg_utils#egg=pkg_utils[pandoc]
+    pip install pkg_utils[pandoc]
     ```
 
 ## Documentation
