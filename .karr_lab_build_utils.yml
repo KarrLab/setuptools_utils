@@ -1,4 +1,6 @@
 downstream_dependencies:  
+  - bcforms
+  - bpforms
   - conv_opt
   - datanator
   # - datanator_frontend
