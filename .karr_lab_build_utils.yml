@@ -10,7 +10,7 @@ downstream_dependencies:
   - karr_lab_build_utils  
   - mycoplasma_pneumoniae
   - nose2unitth
-  - obj_model
+  - obj_tables
   - rand_wc_model_gen
   - unitth
   - wc_cli
