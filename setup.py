@@ -45,7 +45,7 @@ setuptools.setup(
     url="https://github.com/KarrLab/" + name,
     download_url='https://github.com/KarrLab/' + name,
     author="Karr Lab",
-    author_email="karr@mssm.com",
+    author_email="info@karrlab.org",
     license="MIT",
     keywords='setuptools, pip, requirements, GitHub, pandoc',
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
