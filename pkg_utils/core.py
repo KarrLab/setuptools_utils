@@ -11,7 +11,7 @@ entry points during for editable installations.
 import configparser
 import glob2
 import os
-import pip._internal
+import pip._internal.main
 try:
     import pypandoc
 except ImportError:  # pragma: no cover
@@ -426,7 +426,7 @@ def install_dependencies(dependencies, upgrade=False):
     if upgrade:
         cmd.append('-U')
     cmd += dependencies
-    pip._internal.main(cmd)
+    pip._internal.main.main(cmd)
 
 
 def get_console_scripts(dirname, package_name):

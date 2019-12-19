@@ -2,18 +2,18 @@
 try:
     import configparser
 except:
-    import pip._internal
-    pip._internal.main(['install', 'configparser'])
+    import pip._internal.main
+    pip._internal.main.main(['install', 'configparser'])
 try:
     import glob2
 except:
-    import pip._internal
-    pip._internal.main(['install', 'glob2'])
+    import pip._internal.main
+    pip._internal.main.main(['install', 'glob2'])
 try:
     import requirements
 except:
-    import pip._internal
-    pip._internal.main(['install', 'requirements_parser'])
+    import pip._internal.main
+    pip._internal.main.main(['install', 'requirements_parser'])
 
 # import
 import os
