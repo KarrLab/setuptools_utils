@@ -1,19 +1,23 @@
 # install requirements
+import pip
+pip_version = tuple(pip.__version__.split('.'))
+if pip_version >= ('19', '3', '0'):
+    import pip._internal.main as pip_main
+elif pip_version >= ('19', '0', '0'):
+    import pip._internal as pip_main
+
 try:
     import configparser
 except:
-    import pip._internal.main
-    pip._internal.main.main(['install', 'configparser'])
+    pip_main.main(['install', 'configparser'])
 try:
     import glob2
 except:
-    import pip._internal.main
-    pip._internal.main.main(['install', 'glob2'])
+    pip_main.main(['install', 'glob2'])
 try:
     import requirements
 except:
-    import pip._internal.main
-    pip._internal.main.main(['install', 'requirements_parser'])
+    pip_main.main(['install', 'requirements_parser'])
 
 # import
 import os
