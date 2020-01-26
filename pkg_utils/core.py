@@ -121,8 +121,10 @@ def get_version(dirname, package_name):
     Returns:
         :obj:`str`: version
     """
-    with open(os.path.join(dirname, package_name, 'VERSION'), 'r') as file:
-        return file.read().strip()
+    filename= os.path.join(dirname, package_name, 'VERSION')
+    if os.path.isfile(filename):
+        with open( filename, 'r') as file:
+            return file.read().strip()
 
 
 def expand_package_data_filename_patterns(dirname, package_data_filename_patterns=None):
