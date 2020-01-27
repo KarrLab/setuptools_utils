@@ -11,6 +11,7 @@ entry points during for editable installations.
 import configparser
 import glob2
 import os
+import re
 
 import pip
 pip_version = tuple(pip.__version__.split('.'))
