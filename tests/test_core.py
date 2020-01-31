@@ -22,8 +22,8 @@ class TestCase(unittest.TestCase):
         os.mkdir(os.path.join(self.dirname, 'tests'))
         os.mkdir(os.path.join(self.dirname, 'docs'))
 
-        with open(os.path.join(dirname, 'package', 'VERSION'), 'w') as file:
-            file.write('0.0.1')
+        with open(os.path.join(dirname, 'package', '_version.py'), 'w') as file:
+            file.write("__version__='0.0.1'")
 
         with open(os.path.join(dirname, 'README.md'), 'w') as file:
             file.write('# Test\n')
