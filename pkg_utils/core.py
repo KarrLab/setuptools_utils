@@ -123,7 +123,7 @@ def get_version(dirname, package_name):
         :obj:`str`: version
     """
      # get version from _version.py file
-    filename = os.path.joint(dirname,package_name,"_version.py")
+    filename = os.path.join(dirname,package_name,"_version.py")
     if os.path.isfile(filename):
         verstrline = open(filename, "rt").read()
         VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
