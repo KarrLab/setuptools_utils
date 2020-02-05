@@ -8,24 +8,19 @@ entry points during for editable installations.
 :License: MIT
 """
 
+import requirements.parser
+import re
 import configparser
 import glob2
 import os
-import re
-
+import sys
+import subprocess
 import pip
-pip_version = tuple(pip.__version__.split('.'))
-if pip_version >= ('19', '3', '0'):
-    import pip._internal.main as pip_main
-elif pip_version >= ('19', '0', '0'):
-    import pip._internal as pip_main
 
 try:
     import pypandoc
 except ImportError:  # pragma: no cover
     pypandoc = None  # pragma: no cover
-import re
-import requirements.parser
 
 
 class PackageMetadata(object):
@@ -77,10 +72,12 @@ def get_package_metadata(dirname, package_name, package_data_filename_patterns=N
     md.version = get_version(dirname, package_name)
 
     # get data files
-    md.package_data = expand_package_data_filename_patterns(dirname, package_data_filename_patterns=package_data_filename_patterns)
+    md.package_data = expand_package_data_filename_patterns(
+        dirname, package_data_filename_patterns=package_data_filename_patterns)
 
     # get dependencies
-    md.install_requires, md.extras_require, md.tests_require, md.dependency_links = get_dependencies(dirname)
+    md.install_requires, md.extras_require, md.tests_require, md.dependency_links = get_dependencies(
+        dirname)
 
     return md
 
@@ -122,8 +119,8 @@ def get_version(dirname, package_name):
     Returns:
         :obj:`str`: version
     """
-     # get version from _version.py file
-    filename = os.path.join(dirname,package_name,"_version.py")
+    # get version from _version.py file
+    filename = os.path.join(dirname, package_name, "_version.py")
     if os.path.isfile(filename):
         verstrline = open(filename, "rt").read()
         VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
@@ -131,6 +128,7 @@ def get_version(dirname, package_name):
         if mo:
             version = mo.group(1)
             return version
+
 
 def expand_package_data_filename_patterns(dirname, package_data_filename_patterns=None):
     """ Expand the package data filenames
@@ -146,7 +144,8 @@ def expand_package_data_filename_patterns(dirname, package_data_filename_pattern
         for filename_pattern in filename_patterns:
             for filename in glob2.iglob(os.path.join(dirname, module, filename_pattern), include_hidden=True, recursive=True):
                 if os.path.isfile(filename):
-                    module_filenames.append(os.path.relpath(filename, os.path.join(dirname, module)))
+                    module_filenames.append(os.path.relpath(
+                        filename, os.path.join(dirname, module)))
 
         package_data[module] = sorted(set(module_filenames))
     return package_data
@@ -195,9 +194,11 @@ def get_dependencies(dirname, include_uri=False, include_extras=True, include_sp
     dependency_links += tmp
 
     if 'tests' in extras_require and extras_require['tests']:
-        raise ValueError('Test dependencies should be defined in `tests/requirements`')
+        raise ValueError(
+            'Test dependencies should be defined in `tests/requirements`')
     if 'docs' in extras_require and extras_require['docs']:
-        raise ValueError('Documentation dependencies should be defined in `docs/requirements`')
+        raise ValueError(
+            'Documentation dependencies should be defined in `docs/requirements`')
 
     extras_require['tests'] = tests_require
     extras_require['docs'] = docs_require
@@ -215,7 +216,8 @@ def get_dependencies(dirname, include_uri=False, include_extras=True, include_sp
     dependency_links = set(dependency_links)
 
     for option in extras_require:
-        extras_require[option] = extras_require[option].difference(install_requires)
+        extras_require[option] = extras_require[option].difference(
+            install_requires)
     tests_require = tests_require.difference(install_requires)
     docs_require = docs_require.difference(install_requires)
 
@@ -283,11 +285,13 @@ def parse_optional_requirements_file(filename, include_uri=False, include_extras
                 if line[0] == '[':
                     match = re.match('^\[([a-zA-Z0-9-_]+)\]$', line)
                     if not match:
-                        raise ValueError('Could not parse optional dependency: {}'.format(line))
+                        raise ValueError(
+                            'Could not parse optional dependency: {}'.format(line))
                     option = match.group(1)
                 else:
                     if option is None:
-                        raise ValueError("Required dependencies should not be placed in an optional dependencies file: {}".format(line))
+                        raise ValueError(
+                            "Required dependencies should not be placed in an optional dependencies file: {}".format(line))
                     tmp1, tmp2 = parse_requirement_lines([line],
                                                          include_uri=include_uri, include_extras=include_extras,
                                                          include_specs=include_specs, include_markers=include_markers)
@@ -355,7 +359,8 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
     match = re.search(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', line, re.IGNORECASE)
     if match:
         version_hint = match.group(2)
-        line = re.sub(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)', r'egg=\1', line, re.IGNORECASE)
+        line = re.sub(r'egg=([a-z0-9_]+)\-([a-z0-9\.]+)',
+                      r'egg=\1', line, re.IGNORECASE)
     else:
         version_hint = None
 
@@ -386,16 +391,19 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
 
         # add version information to dependency link because pip requires a version hint.
         if not version_hint:
-            raise ValueError('Version hints must be provided for packages from non-PyPI sources')
+            raise ValueError(
+                'Version hints must be provided for packages from non-PyPI sources')
         dependency_link += '-' + version_hint
 
         if req.subdirectory:
             dependency_link += '&subdirectory=' + req.subdirectory
-            uri_line = uri_line.replace('&subdirectory=' + req.subdirectory, '')
+            uri_line = uri_line.replace(
+                '&subdirectory=' + req.subdirectory, '')
 
         if req.hash and req.hash_name:
             dependency_link += '&' + req.hash_name + '=' + req.hash
-            uri_line = uri_line.replace('&' + req.hash_name + '=' + req.hash, '')
+            uri_line = uri_line.replace(
+                '&' + req.hash_name + '=' + req.hash, '')
 
         uri_req = requirements.parser.Requirement.parse_line(uri_line)
         req.specs = list(set(req.specs + uri_req.specs))
@@ -419,7 +427,8 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
         req_setup += '[' + ', '.join(sorted(req.extras)) + ']'
 
     if include_specs and req.specs:
-        req_setup += ' ' + ', '.join([' '.join(spec) for spec in sorted(req.specs)])
+        req_setup += ' ' + ', '.join([' '.join(spec)
+                                      for spec in sorted(req.specs)])
     req_setup = req_setup.rstrip()
 
     if include_markers and marker:
@@ -440,7 +449,7 @@ def install_dependencies(dependencies, upgrade=False):
     if upgrade:
         cmd.append('-U')
     cmd += dependencies
-    pip_main.main(cmd)
+    subprocess.check_call([sys.executable, "-m", "pip", "install", cmd])
 
 
 def get_console_scripts(dirname, package_name):
