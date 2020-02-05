@@ -445,11 +445,13 @@ def install_dependencies(dependencies, upgrade=False):
         dependencies (:obj:`list`): list of dependencies
         upgrade (:obj:`bool`, optional): if :obj:`True`, upgrade package
     """
-    cmd = ['install']
+    dependencies = " ".join(dependencies)
     if upgrade:
-        cmd.append('-U')
-    cmd += dependencies
-    subprocess.check_call([sys.executable, "-m", "pip", "install", cmd])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-U", dependencies])
+    else:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", dependencies])
 
 
 def get_console_scripts(dirname, package_name):
