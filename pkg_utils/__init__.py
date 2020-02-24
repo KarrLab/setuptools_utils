@@ -4,5 +4,4 @@ from .core import (PackageMetadata, get_package_metadata, convert_readme_md_to_r
 import pkg_resources
 
 # read version
-with open(pkg_resources.resource_filename('pkg_utils', 'VERSION'), 'r') as file:
-    __version__ = file.read().strip()
+from ._version import __version__

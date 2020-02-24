@@ -8,14 +8,14 @@ entry points during for editable installations.
 :License: MIT
 """
 
-import requirements.parser
-import re
 import configparser
 import glob2
 import os
-import sys
+import re
+import requirements.parser
 import subprocess
-import pip
+import sys
+
 
 try:
     import pypandoc
@@ -30,7 +30,7 @@ class PackageMetadata(object):
         name (:obj:`str`)
         description (:obj:`str`): short description
         long_description (:obj:`str`): long description, e.g. from ``README.rst``
-        version (:obj:`str`): version, e.g. from ``package/VERSION``
+        version (:obj:`str`): version, e.g. from ``package/_version.py``
         install_requires (:obj:`list` of :obj:`str`): dependencies, e.g. from ``requirements.txt``
         extras_require (:obj:`dict` of :obj:`list` of :obj:`str`): optional dependencies, e.g. from ``requirements.optional.txt``
         tests_require (:obj:`list` of :obj:`str`): test dependencies, e.g. from ``tests/requirements.txt``
@@ -110,7 +110,7 @@ def get_long_description(dirname):
 
 
 def get_version(dirname, package_name):
-    """ Get the version a package from its VERSION file (``package/VERSION``)
+    """ Get the version a package from its version file (``package/_version.py``)
 
     Args:
         dirname (:obj:`str`): path to the package
@@ -283,7 +283,7 @@ def parse_optional_requirements_file(filename, include_uri=False, include_extras
                 if not line or line[0] == '#':
                     continue
                 if line[0] == '[':
-                    match = re.match('^\[([a-zA-Z0-9-_]+)\]$', line)
+                    match = re.match(r'^\[([a-zA-Z0-9-_]+)\]$', line)
                     if not match:
                         raise ValueError(
                             'Could not parse optional dependency: {}'.format(line))
@@ -369,7 +369,7 @@ def parse_requirement_line(line, include_uri=False, include_extras=True, include
     line = req.line
 
     # check that name is valid and we support all of the features needed to install the dependency
-    if not req.name or not re.match('^[a-zA-Z0-9_\.]+$', req.name):
+    if not req.name or not re.match(r'^[a-zA-Z0-9_\.]+$', req.name):
         raise ValueError('Dependency could not be parsed: {}'.format(line))
 
     if line.startswith('-e ') or req.editable:

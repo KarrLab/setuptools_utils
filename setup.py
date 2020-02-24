@@ -27,17 +27,12 @@ import pkg_utils
 # package name
 name = 'pkg_utils'
 dirname = os.path.dirname(__file__)
-package_data = {
-    name: [
-        'VERSION',
-    ],
-}
 
 # convert README.md to README.rst
 pkg_utils.convert_readme_md_to_rst(dirname)
 
 # get package metadata
-md = pkg_utils.get_package_metadata(dirname, name, package_data_filename_patterns=package_data)
+md = pkg_utils.get_package_metadata(dirname, name)
 
 # install package
 setuptools.setup(
