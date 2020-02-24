@@ -4,7 +4,7 @@ Tutorial
 Linking setuptools with package version numbers
 -----------------------------------------------
 
-The following example shows how to link a package number stored in ``package/VERSION`` with setuptools:
+The following example shows how to link a package number stored in ``package/_version.py`` with setuptools:
 
 .. code-block:: python
 
@@ -13,8 +13,10 @@ The following example shows how to link a package number stored in ``package/VER
     try:
         import pkg_utils
     except ImportError:
-        import pip
-        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import subprocess
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pkg_utils"])
         import pkg_utils
 
     # package name
@@ -43,8 +45,10 @@ The following example shows how to link GutHub Markdown-formatted README.md file
     try:
         import pkg_utils
     except ImportError:
-        import pip
-        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import subprocess
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pkg_utils"])
         import pkg_utils
 
     # package name
@@ -76,8 +80,10 @@ The following example illustrates how to link setuptools with requirements.txt f
     try:
         import pkg_utils
     except ImportError:
-        import pip
-        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import subprocess
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pkg_utils"])
         import pkg_utils
 
     # package name
@@ -132,8 +138,10 @@ The following example illustrates how to restore overridden console scripts duri
     try:
         import pkg_utils
     except ImportError:
-        import pip
-        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import subprocess
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pkg_utils"])
         import pkg_utils
 
     # package name
@@ -162,8 +170,10 @@ The following example shows how to use all of the features of this package:
     try:
         import pkg_utils
     except ImportError:
-        import pip
-        pip.main(['install', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+        import subprocess
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pkg_utils"])
         import pkg_utils
 
     # package name
