@@ -128,6 +128,7 @@ def get_version(dirname, package_name):
         if mo:
             version = mo.group(1)
             return version
+    raise Exception("A version file ({}) must be defined".format(filename))
 
 
 def expand_package_data_filename_patterns(dirname, package_data_filename_patterns=None):
