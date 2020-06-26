@@ -32,3 +32,8 @@ downstream_dependencies:
   - wc_utils
 email_notifications:
   - jonrkarr@gmail.com
+static_analyses:
+  ignore_unused_requirements:
+    - pip
+  ignore_missing_requirements:
+    - configobj
